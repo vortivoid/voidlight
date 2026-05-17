@@ -1,0 +1,74 @@
+{
+    "luckyguesser": {
+        "title": "Lucky Guesser",
+        "description": "Win a game of Higher or Lower on your first guess."
+    },
+    "mindreader": {
+        "title": "Mind Reader",
+        "description": "Win 5 games of Higher or Lower on your first guess."
+    },
+    "flippingpro": {
+        "title": "Flipping Pro",
+        "description": "Successfully predict 5 coinflips in a row."
+    },
+    "flippingmaster": {
+        "title": "Flipping Master",
+        "description": "Successfully predict 10 coinflips in a row." 
+    },
+    "flippingshinyhunter": {
+        "title": "Flipping Shiny Hunter",
+        "description": "Successfully predict 12 coinflips in a row. (Same odds as modern shiny pokemon. 1/4096)"
+    },
+    "flippingogshinyhunter": {
+        "title": "Flipping OG Shiny Hunter",
+        "description": "Successfully predict 13 coinflips in a row. (Same odds as old shiny pokemon. 1/8192)"
+    },
+    "risktaker": {
+        "title": "Risk Taker",
+        "description": "Bet 1,000 voidglow on a coin flip and win."
+    },
+    "bigrisktaker": {
+        "title": "Big Risk Taker",
+        "description": "Bet 10,000 voidglow on a coin flip and win."
+    },
+    "hugerisktaker": {
+        "title": "Huge Risk Taker",
+        "description": "Bet 100,000 voidglow on a coin flip and win."
+    },
+    "instantmillionaire": {
+        "title": "Instant Millionaire",
+        "description": "Bet 500,000 voidglow on a coin flip and win."
+    },
+    "freshface": {
+        "title": "Fresh Face",
+        "description": "Reach a daily streak of 3."
+    },
+    "1weekwonder": {
+        "title": "1-Week Wonder",
+        "description": "Reach a daily streak of 7."
+    },
+    "fortnighter": {
+        "title": "Fortnighter",
+        "description": "Reach a daily streak of 14."
+    },
+    "loyaluser": {
+        "title": "Loyal User",
+        "description": "Reach a daily streak of 30."
+    },
+    "professionalstreaker": {
+        "title": "Professional Streaker",
+        "description": "Reach a daily streak of 100."
+    },
+    "lifelongfriend": {
+        "title": "Lifelong Friend",
+        "description": "Reach a daily streak of 365."
+    },
+    "deretonfollower": {
+        "title": "Dereton Follower",
+        "description": "Special badge given to members of The Dereton Union."
+    },
+    "fishboner": {
+        "title": "Fishboner",
+        "description": "Special badge given to members of Fishbones."
+    }
+}

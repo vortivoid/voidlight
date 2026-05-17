@@ -1,0 +1,17 @@
+{
+    "cheapskate": {
+        "title": "Cheapskate",
+        "cost": 10,
+        "description": "Spend a measly 10 voidglow to buy this badge."
+    },
+    "bigspender": {
+        "title": "Big Spender",
+        "cost": 500,
+        "description": "Spend 500 voidglow to buy this badge."
+    },
+    "millionaire": {
+        "title": "Millionaire",
+        "cost": 1000000,
+        "description": "Waste 1 million voidglow just to get this pointless badge."
+    }
+}
