@@ -258,7 +258,7 @@ class MyClient(discord.Client):
         user_id: str = str(message.author.id)
         filepath: str = f"userdata/{user_id}.json"
         data: dict = get_user_data(message.author)
-        data: dict = update_user_data(data, str(message.guild.id))
+        data = update_user_data(data, str(message.guild.id))
         with open(f"userdata/{user_id}.json", "w") as file:
             json.dump(data, file, indent=4)
 
