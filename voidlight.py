@@ -47,22 +47,24 @@ help_message: str = "Commands:\n" \
 "- !help: You literally just used it bruh you know what this does :sob:.\n" \
 "- !say [text]: Repeats whatever is sent following the command.\n" \
 "- !decide [choices]: Chooses a random word from a list seperated by spaces.\n" \
-"- !typecheck [pokemon]: Lists the type matchups against the specified pokemon (data sourced from [PokeAPI](<https://pokeapi.co/>)).\n" \
+"- !rate [thing]: Rates the thing on a scale of 0-10.\n" \
+"- !typecheck [pokemon]: Lists the type matchups against the specified pokemon.\n" \
 "- !shittystory [names]: Writes random interactions between all the names entered.\n" \
 "- !8ball [question]: Responds to the question via a deep and meaningful thought process.\n" \
 "- !uwuify [text]: Absolutely ruins the provided text and makes you want to gouge your eyes out.\n" \
 "- !daily: Claim your daily voidglow reward.\n" \
-"- !coinflip <prediction> <bet>: Flip a coin. Can __optionally__ enter a predition and a bet amount to potentially earn voidglow from a correct prediction.\n" \
+"- !coinflip <prediction> <bet>: Flip a coin with an optional prediction and bet amount.\n" \
 "- !balance: Check your voidglow balance.\n" \
 "- !transfer [@recipient] [amount]: Transfer a specified amount of voidglow from your balance to the recipient.\n" \
-"- !higherlower: Starts a game of Higher or Lower where you can guess the number the bot chooses. You can win voidglow equivilent to the number of remaining attempts you finish with.\n" \
+"- !higherlower: Guess a number between 1-100. Win voidglow based on remaining attempts.\n" \
+"- !hangman: Starts a game of Hangman where you guess letters to find the hidden word. Win voidglow based on the number of lives remaining.\n" \
 "- !shop: Lists all the items in the shop.\n" \
 "- !buy [item name]: Buys an item from the shop.\n" \
 "- !top: Lists server members by order of voidglow balance.\n" \
 "- !badges <@member>: Lists all badges owned by the user.\n" \
 "- !streak: Gets your current daily streak.\n" \
 "- !cancel: Cancels any ongoing games.\n" \
-"- !stats <@member>: Lists all tracked statictics on the user."
+"- !stats <@member>: Lists all tracked statistics on the user."
 
 eightball_responses: list = [
                     "Certainly!", 
@@ -115,6 +117,16 @@ eightball_responses: list = [
                     "No. Just no.",
                     "Fun fact, this is the 49th possible response I have for 8ball! Oh right, your question. Uhh... Sorry I wasn't listening.",
                     "Well, if you asked a random homeless guy, what would he say? Probably something like... 'I'm starving, please could you spare a dollar?'. So there you go, that's the answer to your question. Give me your money! :money_mouth: >:3 ",
+                    "The answer is deep within you.",
+                    "***__CRASH__***! FUCK! I dropped my magical ball of knowledge. I'll uh, have to get back to you on that one...",
+                    "Absolutely... certainly... maybe?",
+                    "Yes.",
+                    "No.",
+                    "Affermative!",
+                    "Negative.",
+                    "Well that one's subjective, it really depends on if you're a good person or not.",
+                    "Objectively yes! Without a shadow of a doubt.",
+                    "Uhhhhhhhh..............."
                 ]
 
 # Forms a single string from a list of strings
