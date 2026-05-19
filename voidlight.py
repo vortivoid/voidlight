@@ -366,7 +366,7 @@ class MyClient(discord.Client):
                     await reply("Rate what exactly? (Usage:\n!rate [thing to rate])")
                 else:
                     not_so_random = random.Random(message.content)
-                    await reply("I rate " + reconstruct_from_split(split_message, 1) + "a " + str(not_so_random.randint(0, 10)) + "/10!")
+                    await reply("I rate " + reconstruct_from_split(split_message, 1) + " a " + str(not_so_random.randint(0, 10)) + "/10!")
             
             elif split_message[0] == "typecheck" or split_message[0] == "tc":
                 if len(split_message) < 2:
