@@ -20,21 +20,21 @@ DAILY_BONUS_MAX: int = 100
 
 HIGHER_LOWER_PRIZES: dict = {
     5: 500,
-    4: 200,
-    3: 50,
-    2: 20,
-    1: 10
+    4: 300,
+    3: 100,
+    2: 50,
+    1: 20
 }
 
 HANGMAN_PRIZES: dict = {
-    "first_try": 300,
-    7: 200,
-    6: 100,
-    5: 80,
-    4: 50,
-    3: 30,
-    2: 20,
-    1: 10    
+    "first_try": 1000,
+    7: 500,
+    6: 300,
+    5: 200,
+    4: 100,
+    3: 80,
+    2: 50,
+    1: 20    
 }
 
 with open("achievements.json", "r") as file:
