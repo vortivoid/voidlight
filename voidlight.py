@@ -735,9 +735,6 @@ class MyClient(discord.Client):
                     if data["games"]["processing"] == True:
                         await reply("please slow down!")
                         return
-                with open(filepath, "w") as file:
-                    data["games"]["processing"] = True
-                    json.dump(data, file, indent=4)
                 try:
                     attempt = int(message.content)
                 except ValueError:
@@ -745,7 +742,11 @@ class MyClient(discord.Client):
                     return
                 if attempt < 1 or attempt > 100:
                     await reply("Please enter a number between 1-100!")
+                    return
                 else:
+                    with open(filepath, "w") as file:
+                        data["games"]["processing"] = True
+                        json.dump(data, file, indent=4)
                     if attempt != data["games"]["higherlower"]["answer"]:
                         data["games"]["higherlower"]["remaining_attempts"] -= 1
 
