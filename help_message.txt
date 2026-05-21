@@ -1,0 +1,22 @@
+Commands:
+- !help: You literally just used it bruh you know what this does :sob:.
+- !say [text]: Repeats whatever is sent following the command.
+- !decide [choices]: Chooses a random word from a list seperated by spaces.
+- !rate [thing]: Rates the thing on a scale of 0-10.
+- !typecheck [pokemon]: Lists the type matchups against the specified pokemon.
+- !shittystory [names]: Writes random interactions between all the names entered.
+- !8ball [question]: Responds to the question via a deep and meaningful thought process.
+- !uwuify [text]: Absolutely ruins the provided text and makes you want to gouge your eyes out.
+- !daily: Claim your daily voidglow reward.
+- !coinflip <prediction> <bet>: Flip a coin with an optional prediction and bet amount.
+- !balance: Check your voidglow balance.
+- !transfer [@recipient] [amount]: Transfer a specified amount of voidglow from your balance to the recipient.
+- !higherlower: Guess a number between 1-100. Win voidglow based on remaining attempts.
+- !hangman: Starts a game of Hangman where you guess letters to find the hidden word. Win voidglow based on the number of lives remaining.
+- !shop: Lists all the items in the shop.
+- !buy [item name]: Buys an item from the shop.
+- !top: Lists server members by order of voidglow balance.
+- !badges <@member>: Lists all badges owned by the user.
+- !streak: Gets your current daily streak.
+- !cancel: Cancels any ongoing games.
+- !stats <@member>: Lists all tracked statistics on the user.

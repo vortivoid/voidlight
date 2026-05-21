@@ -42,29 +42,6 @@ with open("achievements.json", "r") as file:
 with open("shop.json", "r") as file:
     SHOP: dict = json.load(file)
 
-help_message: str = "Commands:\n" \
-"- !help: You literally just used it bruh you know what this does :sob:.\n" \
-"- !say [text]: Repeats whatever is sent following the command.\n" \
-"- !decide [choices]: Chooses a random word from a list seperated by spaces.\n" \
-"- !rate [thing]: Rates the thing on a scale of 0-10.\n" \
-"- !typecheck [pokemon]: Lists the type matchups against the specified pokemon.\n" \
-"- !shittystory [names]: Writes random interactions between all the names entered.\n" \
-"- !8ball [question]: Responds to the question via a deep and meaningful thought process.\n" \
-"- !uwuify [text]: Absolutely ruins the provided text and makes you want to gouge your eyes out.\n" \
-"- !daily: Claim your daily voidglow reward.\n" \
-"- !coinflip <prediction> <bet>: Flip a coin with an optional prediction and bet amount.\n" \
-"- !balance: Check your voidglow balance.\n" \
-"- !transfer [@recipient] [amount]: Transfer a specified amount of voidglow from your balance to the recipient.\n" \
-"- !higherlower: Guess a number between 1-100. Win voidglow based on remaining attempts.\n" \
-"- !hangman: Starts a game of Hangman where you guess letters to find the hidden word. Win voidglow based on the number of lives remaining.\n" \
-"- !shop: Lists all the items in the shop.\n" \
-"- !buy [item name]: Buys an item from the shop.\n" \
-"- !top: Lists server members by order of voidglow balance.\n" \
-"- !badges <@member>: Lists all badges owned by the user.\n" \
-"- !streak: Gets your current daily streak.\n" \
-"- !cancel: Cancels any ongoing games.\n" \
-"- !stats <@member>: Lists all tracked statistics on the user."
-
 eightball_responses: list = [
                     "Certainly!", 
                     "Why yes of course!", 
@@ -337,7 +314,7 @@ class MyClient(discord.Client):
             response_blocked = True
 
             if split_message[0] == "help":
-                await message.channel.send(help_message)
+                await message.channel.send(utils.get_help_message())
 
             elif split_message[0] == "say":
                 if len(split_message) < 2:
