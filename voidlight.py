@@ -5,6 +5,7 @@ import PkmnResistanceCalculator
 import shit_story_generator
 import uwuify
 import os
+import utils
 from enum import Enum
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
@@ -129,14 +130,6 @@ eightball_responses: list = [
                     "Uhhhhhhhh..............."
                 ]
 
-# Forms a single string from a list of strings
-def reconstruct_from_split(split_message: list, split_index: int):
-    message: str = ""
-    new_split: list = split_message[split_index:len(split_message)]
-    for item in new_split:
-        message += item + " "
-    message = message.strip()
-    return message
 
 def update_all_user_data():
     for entry in os.listdir("userdata/"):
@@ -352,7 +345,7 @@ class MyClient(discord.Client):
                 if len(split_message) < 2:
                     await message.channel.send("*says nothing*\n(Useage: !say [message])")
                 else:
-                    await message.channel.send(f"{reconstruct_from_split(split_message, 1)} \n-<@{user_id}>")
+                    await message.channel.send(f"{utils.reconstruct_from_split(split_message, 1)} \n-<@{user_id}>")
                     await message.delete()
             
             elif split_message[0] == "decide":
@@ -366,7 +359,7 @@ class MyClient(discord.Client):
                     await reply("Rate what exactly? (Usage:\n!rate [thing to rate])")
                 else:
                     not_so_random = random.Random(message.content)
-                    await reply("I rate " + reconstruct_from_split(split_message, 1) + " a " + str(not_so_random.randint(0, 10)) + "/10!")
+                    await reply("I rate " + utils.reconstruct_from_split(split_message, 1) + " a " + str(not_so_random.randint(0, 10)) + "/10!")
             
             elif split_message[0] == "typecheck" or split_message[0] == "tc":
                 if len(split_message) < 2:
@@ -394,7 +387,7 @@ class MyClient(discord.Client):
                 if len(split_message) < 2:
                     await reply("U-uhhm, y-yuwu need tu put a s-swentence, siwwy biwwy >w<")
                 else:
-                    new_message = uwuify.run(reconstruct_from_split(split_message, 1))
+                    new_message = uwuify.run(utils.reconstruct_from_split(split_message, 1))
                     await message.channel.send(f"<@{user_id}> says:\n{new_message}")
                     await message.delete()
 
@@ -568,7 +561,7 @@ class MyClient(discord.Client):
                     await reply("Useage: !buy [item name]")
                     return
                 
-                requested_item_name: str = reconstruct_from_split(split_message, 1)
+                requested_item_name: str = utils.reconstruct_from_split(split_message, 1)
                 requested_item_name = requested_item_name.replace(" ", "").replace("_", "").strip()
                 with open("shop.json", "r") as file:
                     shop_data: dict = json.load(file)
