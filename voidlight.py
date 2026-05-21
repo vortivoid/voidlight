@@ -459,14 +459,32 @@ class MyClient(discord.Client):
                 await reply(f"Here are the current items:\n{itemlist}\nBuy items with !buy [item name]")
             
             elif split_message[0] == "top" or split_message[0] == "leaderboard" or split_message[0] == "lb":
+                global_mode: bool =  False
+                show_all: bool = False
+                if len(split_message) > 1 and split_message[1] == "global":
+                    global_mode = True
+                if len(split_message) > 2 and split_message[2] == "all":
+                    show_all = True
                 userlist = []
                 for entry in os.listdir("userdata/"):
                     with open(f"userdata/{entry}") as file:
                         data = json.load(file)
-                    if str(message.guild.id) in data["associated_guilds"]:
+                    if not show_all and data["latest_known_name"] == "none":
+                        print("No name detected and show_all not set. Skipping entry...")
+                        continue
+                    if not show_all and data["balance"] == 0:
+                        print("No balance detected and show_all not set. Skipping entry...")
+                        continue
+                    if not global_mode:
+                        if str(message.guild.id) in data["associated_guilds"]:
+                            userlist.append(data)
+                    else:
                         userlist.append(data)
                 sorted_userlist = sorted(userlist, key=lambda x: x["balance"], reverse=True)
-                final_message = f"{message.guild.name} leaderboard:\n"
+                if global_mode:
+                    final_message = "Global Leaderboard:\n"
+                else:
+                    final_message = f"{message.guild.name} leaderboard:\n"
                 for user in sorted_userlist:
                     final_message += f"- {user["latest_known_name"]}: {user["balance"]} voidglow.\n"
                 await reply(final_message)
