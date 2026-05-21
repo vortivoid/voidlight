@@ -595,7 +595,7 @@ class MyClient(discord.Client):
                 elif amount < 0:
                     await reply(f"Removed {amount} from <@{recipient_id}>'s balance. (New balance: {recipient_data["balance"]})")
                 else:
-                    await reply(f"Did absolutely fuck all to <@{recipient_id}'s balance.")
+                    await reply(f"Did absolutely fuck all to <@{recipient_id}>'s balance.")
 
             elif split_message[0] == "grantbadge" or split_message[0] == "addbadge":
                 if str(user_id) != "1377945939859341373":
