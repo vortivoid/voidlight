@@ -716,6 +716,8 @@ class MyClient(discord.Client):
                         data["stats"]["voidglow"]["earned"] += prize
                         data["stats"]["higherlower"]["total_winnings"] += prize
                         data["stats"]["higherlower"]["games_won"] += 1
+                        data["stats"]["higherlower"]["current_streak"] += 1
+                        data["stats"]["higherlower"]["longest_streak"] = max(data["stats"]["higherlower"]["longest_streak"], data["stats"]["higherlower"]["current_streak"])
                         data.pop("games")
 
                     if "games" in data and data["games"]["higherlower"]["remaining_attempts"] <= 0:
