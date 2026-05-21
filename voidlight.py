@@ -616,8 +616,10 @@ class MyClient(discord.Client):
                 if "games" in data:
                     await reply("You have a game in progress! Type !cancel to end the game.")
                     return
-                with open("wordlist.txt", "r") as file:
-                    wordlist = file.readlines()
+                wordlist = utils.get_hangman_wordlist()
+                if wordlist is None:
+                    await reply("There was an error fetching the word list. Please report this issue to Vorti.")
+                    return
                 randomword = random.choice(wordlist)[0:-1]
                 blanked_answer: str = "-" * len(randomword)
                 data["games"] = {"hangman": {"answer": randomword, "remaining_attempts": 7, "progress": blanked_answer, "first_guess": True, "absent_letters": []}}
