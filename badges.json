@@ -75,7 +75,7 @@
         "title": "Fishboner",
         "description": "Special badge given to members of Fishbones."
     },
-    
+
     "cheapskate": {
         "title": "Cheapskate",
         "description": "Spend a measly 10 voidglow to buy this badge."
@@ -87,5 +87,31 @@
     "millionaire": {
         "title": "Millionaire",
         "description": "Waste 1 million voidglow just to get this pointless badge."
+    },
+
+    "badgecollector": {
+        "title": "Badge Collector",
+        "description": "Earn 10 badges. (Yes, you get a badge for having badges)"
+    },
+
+    "gamblingaddict": {
+        "title": "Gambling Addict",
+        "description": "Play 500 games of coinflip."
+    },
+    "successfulgambler": {
+        "title": "Successful Gambler",
+        "description": "Earn a total of 100,000 from coin flips."
+    },
+    "ropebunny": {
+        "title": "Rope Bunny",
+        "description": "Play 100 games of hangman."
+    },
+    "lifesaver": {
+        "title": "Life Saver",
+        "description": "Win 20 games of hangman."
+    },
+    "flawlesswordfinder": {
+        "title": "Flawless Word Finder",
+        "description": "Win 5 games of hangman without losing any lives."
     }
 }

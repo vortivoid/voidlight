@@ -220,6 +220,7 @@ class MyClient(discord.Client):
                 await grant_badge(user, "hugerisktaker")
             if user["stats"]["coinflip"]["biggest_winning_bet"] >= 500000:
                 await grant_badge(user, "instantmillionaire")
+
             if user["stats"]["coinflip"]["longest_streak"] >= 5:
                 await grant_badge(user, "flippingpro")
             if user["stats"]["coinflip"]["longest_streak"] >= 10:
@@ -228,11 +229,33 @@ class MyClient(discord.Client):
                 await grant_badge(user, "flippingshinyhunter")
             if user["stats"]["coinflip"]["longest_streak"] >= 13:
                 await grant_badge(user, "flippingshinyhunter")
+
+            if user["stats"]["coinflip"]["games_played"] >= 500:
+                await grant_badge(user, "gamblingaddict")
+
+            if user["stats"]["coinflip"]["total_winnings"] >= 100000:
+                await grant_badge(user, "successfulgambler")
                 
             if user["stats"]["higherlower"]["first_attempt_wins"] >= 1:
                 await grant_badge(user, "luckyguesser")
             if user["stats"]["higherlower"]["first_attempt_wins"] >= 5:
                 await grant_badge(user, "mindreader")
+            
+            if user["stats"]["hangman"]["flawless_wins"] >= 5:
+                await grant_badge(user, "flawlesswordfinder")
+            
+            if user["stats"]["hangman"]["games_played"] >= 100:
+                await grant_badge(user, "ropebunny")
+            
+            if user["stats"]["hangman"]["games_won"] >= 20:
+                await grant_badge(user, "lifesaver")
+            
+            if user["stats"]["hangman"]["flawless_wins"] >= 5:
+                await grant_badge(user, "flawlesswordfinder")
+            
+            if len(user["badges"]) >= 10:
+                await grant_badge(user, "badgecollector")
+            
 
         # Commands
         if message.content[0] == "!" or split_message[0] == "<@1388908602932203520>":
@@ -733,6 +756,8 @@ class MyClient(discord.Client):
                             data["stats"]["hangman"]["games_won"] += 1
                             data["stats"]["hangman"]["current_streak"] += 1
                             data["stats"]["hangman"]["longest_streak"] = max(data["stats"]["hangman"]["current_streak"], data["stats"]["hangman"]["longest_streak"])
+                            if data["games"]["hangman"]["remaining_attempts"] == 7:
+                                data["stats"]["hangman"]["flawless_wins"] += 1
                             await reply(f"You have been awarded {prize} voidglow!")
                             data.pop("games")
                         else:
