@@ -1,6 +1,6 @@
 import random
 
-def get_hangman_wordlist() -> list | None:
+def get_hangman_word() -> list | None:
     wordlist = []
     try:
         with open("wordlist.txt", "r") as file:
