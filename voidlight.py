@@ -40,8 +40,8 @@ HANGMAN_PRIZES: dict = {
     1: 20    
 }
 
-with open("achievements.json", "r") as file:
-    ACHIEVEMENTS: dict = json.load(file)
+with open("badges.json", "r") as file:
+    BADGES: dict = json.load(file)
 
 with open("shop.json", "r") as file:
     SHOP: dict = json.load(file)
@@ -120,7 +120,6 @@ def get_user_data_from_id(id: str, name: str = ""):
         json.dump(data, file, indent=4)
     return data
 
-
 class BALANCE_MODIFIER(Enum):
     earned = 1
     lost = 2
@@ -161,7 +160,6 @@ def modify_balance(user: dict, amount: int, modifier: BALANCE_MODIFIER):
             user["stats"]["voidglow"]["granted"] += amount
             return True
 
-
 class MyClient(discord.Client):
 
     async def process_message(self, message):
@@ -191,14 +189,10 @@ class MyClient(discord.Client):
         async def grant_badge(user: dict, badge_name: str):
             if badge_name in user["badges"]:
                 return False
-            if badge_name in ACHIEVEMENTS:
-                badge = ACHIEVEMENTS[badge_name]
-                user["badges"].update({badge_name: badge})
-            elif badge_name in SHOP:
-                badge = SHOP[badge_name]
-                user["badges"].update({badge_name: badge})
-            else:
+            if badge_name not in BADGES:
                 return False
+            badge = BADGES[badge_name]
+            user["badges"].append(badge_name)
             await message.channel.send(f"<@{user_id}> has earned the {badge["title"]} badge!")
             return True
 
@@ -456,11 +450,12 @@ class MyClient(discord.Client):
                 await reply("I have chosen a random number between 1 and 100. You have 5 attempts.")
 
             elif split_message[0] == "shop" or split_message[0] == "s":
-                with open("shop.json", "r") as file:
-                    shop_data = json.load(file)
                 itemlist: str = ""
-                for _, details in shop_data.items():
-                    itemlist += f"- {details["title"]} ({details["cost"]} voidglow): {details["description"]}\n"
+                for id, cost in SHOP.items():
+                    if id not in BADGES:
+                        print(f"Error: {id} not found in badges.json!")
+                        continue
+                    itemlist += f"- {BADGES[id]["title"]} ({cost} voidglow): {BADGES[id]["description"]}\n"
                 await reply(f"Here are the current items:\n{itemlist}\nBuy items with !buy [item name]")
             
             elif split_message[0] == "top" or split_message[0] == "leaderboard" or split_message[0] == "lb":
@@ -480,37 +475,29 @@ class MyClient(discord.Client):
                 if len(split_message) < 2:
                     await reply("Useage: !buy [item name]")
                     return
-                
                 requested_item_name: str = reconstruct_from_split(split_message, 1)
                 requested_item_name = requested_item_name.replace(" ", "").replace("_", "").strip()
                 requested_item_name = requested_item_name.lower()
-                with open("shop.json", "r") as file:
-                    shop_data: dict = json.load(file)
-                try:
-                    requested_item: dict = shop_data[requested_item_name]
-                except KeyError:
+                if requested_item_name not in SHOP:
                     await reply("That item could not be found!")
                     return
-
+                if requested_item_name not in BADGES:
+                    await reply("There was a problem fetching this badge's data. Please contact Vorti if this continues.")
+                    return
                 if requested_item_name in data["badges"]:
                     await reply("You already have this item!")
                     return
-                if data["balance"] < requested_item["cost"]:
+                cost = SHOP[requested_item_name]
+                if data["balance"] < cost:
                     await reply("You do not have enough voidglow for this item!")
                     return
-                if requested_item is None:
-                    await reply("That item could not be found!")
-                    return
-                
-                data["balance"] -= requested_item["cost"]
                 success = await grant_badge(data, requested_item_name)
                 if not success:
                     await reply("There was an error purchasing this badge. Please ensure you entered the name correctly!")
                     return
-                await reply(f"purchased the {requested_item["title"]} badge for {requested_item["cost"]} voidglow!")
-
-                data["stats"]["voidglow"]["spent"] += requested_item["cost"]
-
+                data["balance"] -= SHOP[requested_item_name]
+                await reply(f"purchased the {BADGES[requested_item_name]["title"]} badge for {cost} voidglow!")
+                data["stats"]["voidglow"]["spent"] += cost
                 with open(filepath, "w") as file:
                     json.dump(data, file, indent=4)
 
@@ -528,8 +515,8 @@ class MyClient(discord.Client):
                     await reply("that user does not have any badges!")
                 
                 final_message: str = f"<@{target_id}>'s badges:"
-                for _, badge in target_data["badges"].items():
-                    final_message += f"\n{badge["title"]}: {badge["description"]}"
+                for badge_name in target_data["badges"]:
+                    final_message += f"\n{BADGES[badge_name]["title"]}: {BADGES[badge_name]["description"]}"
                 await reply(final_message)
 
             elif split_message[0] == "hangman" or split_message[0] == "hm":
