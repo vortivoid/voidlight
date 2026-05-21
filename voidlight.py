@@ -13,8 +13,6 @@ from mergedeep import merge
 
 MAINTAINENCE_MODE: bool = False
 
-ADMINS: list = [1377945939859341373]
-
 DAILY_REWARD: int = 10
 STREAK_BONUS: int = 10
 DAILY_BONUS_MAX: int = 100
@@ -327,7 +325,7 @@ class MyClient(discord.Client):
         # Commands
         if message.content[0] == "!" or split_message[0] == "<@1388908602932203520>":
             if MAINTAINENCE_MODE:
-                if user_id not in ADMINS:
+                if user_id not in utils.get_admins():
                     await reply("I am currently undergoing maintainence! Commands are disabled for non-admin users.")
                     return
 
@@ -719,9 +717,8 @@ class MyClient(discord.Client):
 
         # Responses
         if response_blocked == False:
-            if MAINTAINENCE_MODE:
-                if user_id not in ADMINS:
-                    return
+            if MAINTAINENCE_MODE and user_id not in utils.get_admins():
+                return
             
             elif "cat" in message.content.lower():
                 await message.add_reaction("🐱")
