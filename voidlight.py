@@ -5,9 +5,6 @@ import PkmnResistanceCalculator
 import shit_story_generator
 import uwuify
 import os
-from utils import get_admins
-from utils import get_help_message
-from utils import get_hangman_wordlist
 from enum import Enum
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
@@ -47,69 +44,6 @@ with open("achievements.json", "r") as file:
 
 with open("shop.json", "r") as file:
     SHOP: dict = json.load(file)
-
-eightball_responses: list = [
-                    "Certainly!", 
-                    "Why yes of course!", 
-                    "Yeah 100%", 
-                    "Uhhhhh... maybe?", 
-                    "I suppose so.", 
-                    "It's within the realm of possibility.", 
-                    "Girl I have no clue :sob:", 
-                    "I don't know and I don't care.", 
-                    "Boring question :yawning_face:", 
-                    "NO!", 
-                    "Nuh uh.", 
-                    "NO?!?!?", 
-                    "That is simply impossible.", 
-                    "Ask someone else.", 
-                    "Wouldn't YOU like to know!", 
-                    "Maybe the real question is the friends we made along the way.",
-                    "Idk ask Google",
-                    "Idk ask Bing",
-                    "Good question.",
-                    "What's it to ya?",
-                    "Yeah no yeah no yeah",
-                    "Yes...?",
-                    "No...?",
-                    "Maybe...?",
-                    "Abso-freaking-lutely!",
-                    "I'm afraid your question has been deemed STUPID and DUMB, and therefore I cannot answer it.",
-                    "42.",
-                    "Calculating.... just kidding i have no clue lol.",
-                    "You must be a special breed of stupid to ask something so obvious.",
-                    "I could answer that, but I have decided not to.",
-                    "Lol idk.",
-                    "YES!..... maybe?",
-                    "Yes but only on wednesdays.",
-                    "No but only on thursdays.",
-                    "Only if you say the magic word.",
-                    "No but also yes.",
-                    "Yeah! :D",
-                    "Error: Could not calculate response to such a dumb question. Please try again with a less dumb question.",
-                    "Well yes, but...",
-                    "What does that even mean?",
-                    "Probably.",
-                    "Probably not.",
-                    ":sob: sorry :sob: that :sob: question :sob: is :sob: too :sob: sad :sob: for :sob: me :sob: to :sob: answer :sob:.",
-                    "YES?!?!?",
-                    "Well duh, obviously."
-                    "I just opened a fortune cookie and it didn't answer your question, but apparently you're going to die soon."
-                    "If you ask one more question like that I'm gonna lose it.",
-                    "No. Just no.",
-                    "Fun fact, this is the 49th possible response I have for 8ball! Oh right, your question. Uhh... Sorry I wasn't listening.",
-                    "Well, if you asked a random homeless guy, what would he say? Probably something like... 'I'm starving, please could you spare a dollar?'. So there you go, that's the answer to your question. Give me your money! :money_mouth: >:3 ",
-                    "The answer is deep within you.",
-                    "***__CRASH__***! FUCK! I dropped my magical ball of knowledge. I'll uh, have to get back to you on that one...",
-                    "Absolutely... certainly... maybe?",
-                    "Yes.",
-                    "No.",
-                    "Affermative!",
-                    "Negative.",
-                    "Well that one's subjective, it really depends on if you're a good person or not.",
-                    "Objectively yes! Without a shadow of a doubt.",
-                    "Uhhhhhhhh..............."
-                ]
 
 
 def update_all_user_data():
@@ -361,8 +295,12 @@ class MyClient(discord.Client):
                 if len(split_message) < 2:
                     await reply("Uhh... you're supposed to ask a question, dumbass.")
                 else:
-                    not_so_random = random.Random(message.content)
-                    await reply(eightball_responses[not_so_random.randint(0, (len(eightball_responses) - 1))])
+                    response = get_eightball_response()
+                    if response is None:
+                        await reply("There was a problem fetching 8ball responses! Please report this issue to Vorti.")
+                        return
+                    else:
+                        await reply(response)
             
             elif split_message[0] == "uwuify" or split_message[0] == "uwu":
                 if len(split_message) < 2:
