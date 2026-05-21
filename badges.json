@@ -7,6 +7,7 @@
         "title": "Mind Reader",
         "description": "Win 5 games of Higher or Lower on your first guess."
     },
+
     "flippingpro": {
         "title": "Flipping Pro",
         "description": "Successfully predict 5 coinflips in a row."
@@ -23,6 +24,7 @@
         "title": "Flipping OG Shiny Hunter",
         "description": "Successfully predict 13 coinflips in a row. (Same odds as old shiny pokemon. 1/8192)"
     },
+
     "risktaker": {
         "title": "Risk Taker",
         "description": "Bet 1,000 voidglow on a coin flip and win."
@@ -39,6 +41,7 @@
         "title": "Instant Millionaire",
         "description": "Bet 500,000 voidglow on a coin flip and win."
     },
+
     "freshface": {
         "title": "Fresh Face",
         "description": "Reach a daily streak of 3."
@@ -63,6 +66,7 @@
         "title": "Lifelong Friend",
         "description": "Reach a daily streak of 365."
     },
+
     "deretonfollower": {
         "title": "Dereton Follower",
         "description": "Special badge given to members of The Dereton Union."
@@ -71,6 +75,7 @@
         "title": "Fishboner",
         "description": "Special badge given to members of Fishbones."
     },
+    
     "cheapskate": {
         "title": "Cheapskate",
         "description": "Spend a measly 10 voidglow to buy this badge."
