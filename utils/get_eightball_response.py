@@ -3,7 +3,7 @@ import random
 def get_eightball_response() -> str | None:
     try:
         with open("eightball_responses.txt", "r") as file:
-            possible_responses = file.readlines
+            possible_responses = file.readlines()
             response = random.choice(possible_responses)
             return response
     except FileNotFoundError:
