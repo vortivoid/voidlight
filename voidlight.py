@@ -12,6 +12,10 @@ from enum import Enum
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from mergedeep import merge
+from utils import get_admins
+from utils import get_help_message
+from utils import get_hangman_word
+from utils import get_eightball_response
 
 MAINTAINENCE_MODE: bool = False
 
@@ -593,11 +597,10 @@ class MyClient(discord.Client):
                 if "games" in data:
                     await reply("You have a game in progress! Type !cancel to end the game.")
                     return
-                wordlist = get_hangman_wordlist()
-                if wordlist is None:
+                randomword = get_hangman_word()
+                if randomword is None:
                     await reply("There was an error fetching the word list. Please report this issue to Vorti.")
                     return
-                randomword = random.choice(wordlist)[0:-1]
                 blanked_answer: str = "-" * len(randomword)
                 data["games"] = {"hangman": {"answer": randomword, "remaining_attempts": 7, "progress": blanked_answer, "first_guess": True, "absent_letters": []}}
                 data["stats"]["hangman"]["games_played"] += 1

@@ -1,3 +1,5 @@
+import random
+
 def get_hangman_wordlist() -> list | None:
     wordlist = []
     try:
@@ -6,4 +8,5 @@ def get_hangman_wordlist() -> list | None:
     except FileNotFoundError:
         print("Error: Could not locate file!")
         return None
-    return wordlist
+    word = random.choice(wordlist)[0:-1]
+    return word
