@@ -5,7 +5,9 @@ import PkmnResistanceCalculator
 import shit_story_generator
 import uwuify
 import os
-import utils
+from utils import get_admins
+from utils import get_help_message
+from utils import get_hangman_wordlist
 from enum import Enum
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
@@ -302,7 +304,7 @@ class MyClient(discord.Client):
         # Commands
         if message.content[0] == "!" or split_message[0] == "<@1388908602932203520>":
             if MAINTAINENCE_MODE:
-                if user_id not in utils.get_admins():
+                if user_id not in get_admins():
                     await reply("I am currently undergoing maintainence! Commands are disabled for non-admin users.")
                     return
 
@@ -314,7 +316,7 @@ class MyClient(discord.Client):
             response_blocked = True
 
             if split_message[0] == "help":
-                await message.channel.send(utils.get_help_message())
+                await message.channel.send(get_help_message())
 
             elif split_message[0] == "say":
                 if len(split_message) < 2:
@@ -591,7 +593,7 @@ class MyClient(discord.Client):
                 if "games" in data:
                     await reply("You have a game in progress! Type !cancel to end the game.")
                     return
-                wordlist = utils.get_hangman_wordlist()
+                wordlist = get_hangman_wordlist()
                 if wordlist is None:
                     await reply("There was an error fetching the word list. Please report this issue to Vorti.")
                     return
@@ -694,7 +696,7 @@ class MyClient(discord.Client):
 
         # Responses
         if response_blocked == False:
-            if MAINTAINENCE_MODE and user_id not in utils.get_admins():
+            if MAINTAINENCE_MODE and user_id not in get_admins():
                 return
             
             elif "cat" in message.content.lower():
