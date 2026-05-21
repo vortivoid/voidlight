@@ -608,9 +608,10 @@ class MyClient(discord.Client):
                 recipient_id: str = split_message[1][2:-1]
                 recipient_filepath = f"userdata/{recipient_id}.json"
                 recipient_data = get_user_data_from_id(recipient_id)
-                success = grant_badge(recipient_data, badge_name)
-                if not success:
+                success = await grant_badge(recipient_data, badge_name)
+                if success == False:
                     await reply("There was an error purchasing this badge. Please ensure you entered the name correctly!")
+                    return
                 with open(recipient_filepath, "w") as file:
                     json.dump(recipient_data, file, indent=4)
                 await reply(f"<@{recipient_id}> has been granted the {badge_name} badge!")
