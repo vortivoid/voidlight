@@ -563,15 +563,23 @@ class MyClient(discord.Client):
                 
                 requested_item_name: str = utils.reconstruct_from_split(split_message, 1)
                 requested_item_name = requested_item_name.replace(" ", "").replace("_", "").strip()
+                requested_item_name = requested_item_name.lower()
                 with open("shop.json", "r") as file:
                     shop_data: dict = json.load(file)
-                requested_item: dict = shop_data[requested_item_name]
+                try:
+                    requested_item: dict = shop_data[requested_item_name]
+                except KeyError:
+                    await reply("That item could not be found!")
+                    return
 
                 if requested_item_name in data["badges"]:
                     await reply("You already have this item!")
                     return
                 if data["balance"] < requested_item["cost"]:
                     await reply("You do not have enough voidglow for this item!")
+                    return
+                if requested_item is None:
+                    await reply("That item could not be found!")
                     return
                 
                 data["balance"] -= requested_item["cost"]
