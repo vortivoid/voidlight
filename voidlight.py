@@ -610,6 +610,12 @@ class MyClient(discord.Client):
                         final_message += f"\n- {subcategory.replace("_", " ").title()}: {subcategory_data}"
                 await reply(final_message)
 
+            elif split_message[0] == "listbadges" or split_message[0] == "allbadges" or split_message[0] == "badgelist":
+                final_message:str = "All Badges:\n"
+                for _, badgedata in BADGES.items():
+                    final_message += f"- {badgedata["title"]}: {badgedata["description"]}\n"
+                await reply(final_message)
+
 
             # Admin Commands
             elif split_message[0] == "modvoidglow" or split_message[0] == "modifyvoidglow":
