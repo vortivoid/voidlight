@@ -30,7 +30,7 @@ HIGHER_LOWER_PRIZES: dict = {
 }
 
 HANGMAN_PRIZES: dict = {
-    "first_try": 1000,
+    "first_try": 10000,
     7: 500,
     6: 300,
     5: 200,
