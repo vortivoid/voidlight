@@ -65,7 +65,7 @@ def update_user_data(data: dict, guild_id = ""):
     return updated_data
 
 # Returns a dictionary from a json file at the provided filepath
-def get_user_data(member: discord.Member):
+def get_user_data(member: discord.User):
     filepath: str = f"userdata/{member.id}.json"
     try:
         with open(filepath, "r") as file:
