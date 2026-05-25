@@ -327,41 +327,7 @@ class MyClient(discord.Client):
 
             response_blocked = True
             
-            if split_message[0] == "typecheck" or split_message[0] == "tc":
-                if len(split_message) < 2:
-                    await reply("Usage:\n!typecheck [pokemon]")
-                else:
-                    try:
-                        await reply(str(PkmnResistanceCalculator.calculate(split_message[1])))
-                    except:
-                        await reply("Sorry, this Pokemon could not be checked. Make sure you spelt it correctly! (Or get Vorti to get off their lazy ass and fix this if you did)")
-
-            elif split_message[0] == "daily" or split_message[0] == "d":
-                bonus_earned = 0
-                if data["last_daily"] == str(datetime.now().strftime("%Y-%m-%d")):
-                    await reply("You have already claimed your daily reward!")
-                    return
-                
-                yesterday = (datetime.now() - timedelta(days = 1)).strftime("%Y-%m-%d")
-                if data["last_daily"] == yesterday:
-                    data["daily_streak"] += 1
-                    data["stats"]["daily"]["longest_streak"] = max(data["stats"]["daily"]["longest_streak"], data["daily_streak"])
-                    bonus_earned = min((STREAK_BONUS * (int(data["daily_streak"] - 1))), DAILY_BONUS_MAX)
-                else:
-                    data["daily_streak"] = 1
-                
-                total_earnings = DAILY_REWARD + bonus_earned
-                modify_balance(data, total_earnings, BALANCE_MODIFIER.earned)
-                data["stats"]["daily"]["voidglow_earned"] += total_earnings
-                data["last_daily"] = datetime.now().strftime("%Y-%m-%d")
-            
-                await update_badges(data)
-
-                await reply(f"Claimed {total_earnings} voidglow! Your new balance is " + str(data["balance"]) + f" voidglow. ({data["daily_streak"]} day streak!)")
-                with open(filepath, "w") as file:
-                    json.dump(data, file, indent=4)
-            
-            elif split_message[0] == "balance" or split_message[0] == "bal" or split_message[0] == "b":
+            if split_message[0] == "balance" or split_message[0] == "bal" or split_message[0] == "b":
                 if len(split_message) > 1:
                     if split_message[1][0] != "<":
                         await reply("Useage: !balance <@user>")
@@ -905,6 +871,47 @@ async def eightball(interaction:discord.Interaction, query:str):
         return
     else:
         await interaction.response.send_message(f"Query: `{query}`\n\n{response}")
+
+@commands.command(
+        name="typecheck",
+        description="See how different types interact with the specified Pokemon."
+)
+async def typecheck(interaction:discord.Interaction, pokemon:str):
+    try:
+        await interaction.response.send_message(PkmnResistanceCalculator.calculate(pokemon))
+    except:
+        await interaction.response.send_message("Sorry, this Pokemon could not be checked. Make sure you spelt it correctly!", ephemeral=True)
+
+@commands.command(
+        name="daily",
+        description="Claim your daily voidglow reward!"
+)
+async def daily(interaction:discord.Interaction):
+    bonus_earned = 0
+    _data = get_user_data(interaction.user)
+    _filepath = get_user_file_path(interaction.user)
+    if _data["last_daily"] == str(datetime.now().strftime("%Y-%m-%d")):
+        await interaction.response.send_message("You have already claimed your daily reward!", ephemeral=True)
+        return
+    
+    yesterday = (datetime.now() - timedelta(days = 1)).strftime("%Y-%m-%d")
+    if _data["last_daily"] == yesterday:
+        _data["daily_streak"] += 1
+        _data["stats"]["daily"]["longest_streak"] = max(_data["stats"]["daily"]["longest_streak"], _data["daily_streak"])
+        bonus_earned = min((STREAK_BONUS * (int(_data["daily_streak"] - 1))), DAILY_BONUS_MAX)
+    else:
+        _data["daily_streak"] = 1
+    
+    total_earnings = DAILY_REWARD + bonus_earned
+    modify_balance(_data, total_earnings, BALANCE_MODIFIER.earned)
+    _data["stats"]["daily"]["voidglow_earned"] += total_earnings
+    _data["last_daily"] = datetime.now().strftime("%Y-%m-%d")
+
+    await update_badges(_data, interaction)
+
+    await interaction.response.send_message(f"Claimed {total_earnings} voidglow! Your new balance is " + str(_data["balance"]) + f" voidglow. ({_data["daily_streak"]} day streak!)")
+    with open(_filepath, "w") as file:
+        json.dump(_data, file, indent=4)
 
 
 
