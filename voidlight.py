@@ -327,62 +327,8 @@ class MyClient(discord.Client):
                 split_message.pop(0) #remove bot mention
 
             response_blocked = True
-        
-            if split_message[0] == "coinflip" or split_message[0] == "cf" or split_message[0] == "flip":
-                local_random = random.Random(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                result = local_random.choice(['heads', 'tails'])
-                if len(split_message) < 2:
-                    await reply(f"Flipping a coin... It's {result}!")
-                else:
-                    bet_amount = 0
-                    if len(split_message) >= 3:
-                        try:
-                            bet_amount = int(split_message[2])
-                        except ValueError:
-                            await reply("Invalid bet amount! Please enter a valid number. (Usage: !coinflip [heads/tails] [bet amount])")
-                            return
-                        if bet_amount > data["balance"]:
-                            await reply(f"You don't have enough voidglow to make that bet! Your current balance is {str(data["balance"])} voidglow.")
-                            return
-                        if bet_amount <= 0:
-                            await reply("Please enter a positive number.")
-                            return
-                    
-                    if split_message[1].lower()[0] == "h":
-                        user_guess: str = "heads"
-                    elif split_message[1].lower()[0] == "t":
-                        user_guess: str = "tails"
-                    else:
-                        await reply(f"Invalid choice! Please choose heads or tails. (Usage: !coinflip [heads/tails])")
-                        return
-                    
-                    if user_guess == result:
-                        await reply(f"You chose {user_guess} and the coin landed on {result}. You win!")
-                        await reply(f"You won {bet_amount} voidglow! Your new balance is {data['balance'] + bet_amount} voidglow.")
-                        modify_balance(data, bet_amount, BALANCE_MODIFIER.earned)
-                        data["stats"]["coinflip"]["total_winnings"] += bet_amount
-                        data["stats"]["coinflip"]["correct_predictions"] += 1
-                        data["stats"]["coinflip"]["current_streak"] += 1
-                        data["stats"]["coinflip"]["longest_streak"] = max(data["stats"]["coinflip"]["current_streak"], data["stats"]["coinflip"]["longest_streak"])
-                        data["stats"]["coinflip"]["biggest_winning_bet"] = max(data["stats"]["coinflip"]["biggest_winning_bet"], bet_amount)
-                    else:
-                        await reply(f"You chose {user_guess} but the coin landed on {result}. You lose!")
-                        await reply(f"You lost {bet_amount} voidglow! Your new balance is {data['balance'] - bet_amount} voidglow.")
-                        modify_balance(data, bet_amount, BALANCE_MODIFIER.lost)
-                        data["stats"]["coinflip"]["total_losings"] += bet_amount
-                        data["stats"]["coinflip"]["incorrect_predictions"] += 1
-                        data["stats"]["coinflip"]["current_streak"] = 0
-                        data["stats"]["coinflip"]["biggest_losing_bet"] = max(data["stats"]["coinflip"]["biggest_losing_bet"], bet_amount)
-                    
-                    data["stats"]["coinflip"]["total_betted"] += bet_amount
-                    data["stats"]["coinflip"]["games_played"] += 1
 
-                    #await update_badges(data)
-
-                    with open(filepath, "w") as file:
-                        json.dump(data, file, indent=4)
-
-            elif split_message[0] == "transfer" or split_message[0] == "trans":
+            if split_message[0] == "transfer" or split_message[0] == "trans":
                 if len(split_message) < 3:
                     await reply("Useage: !transfer [@recipient] [amount]")
                 recipient_id: str = split_message[1][2:-1]
@@ -916,6 +862,61 @@ async def balance(interaction:discord.Interaction, user:Optional[discord.User] =
     else:
         await interaction.response.send_message(f"{user.name}'s balance is {target_data["balance"]} voidglow.", ephemeral=True)
 
+@commands.command(
+        name="coinflip",
+        description="Flip a coin, optionally predict the outcome and bet voidglow."
+)
+async def coinflip(interaction:discord.Interaction, prediction:Optional[Literal["heads", "tails"]], bet_amount:Optional[int]):
+    local_random = random.Random(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    result = local_random.choice(['heads', 'tails'])
+    if bet_amount is not None and prediction is None:
+        await interaction.response.send_message("If you want to bet voidglow, you must select your prediction!", ephemeral=True)
+        return
+    if prediction is None:
+        await interaction.response.send_message(f"Flipping a coin... It's {result}!")
+        return
+    
+    _data = get_user_data(interaction.user)
+    _filepath = get_user_file_path(interaction.user)
+
+    if bet_amount is not None:
+        if bet_amount > _data["balance"]:
+            await interaction.response.send_message(f"You don't have enough voidglow to make that bet! Your current balance is {str(_data["balance"])} voidglow.", ephemeral=True)
+            return
+        if bet_amount <= 0:
+            await interaction.response.send_message("Please enter a positive number.", ephemeral=True)
+            return
+    
+        if prediction == result:
+            await interaction.response.send_message(f"<@{interaction.user.id}> You chose {prediction} and the coin landed on {result}. You win! :tada:\n\nYou won {bet_amount} voidglow! Your new balance is {_data['balance'] + bet_amount} voidglow.")
+            modify_balance(_data, bet_amount, BALANCE_MODIFIER.earned)
+            _data["stats"]["coinflip"]["total_winnings"] += bet_amount
+            _data["stats"]["coinflip"]["correct_predictions"] += 1
+            _data["stats"]["coinflip"]["current_streak"] += 1
+            _data["stats"]["coinflip"]["longest_streak"] = max(_data["stats"]["coinflip"]["current_streak"], _data["stats"]["coinflip"]["longest_streak"])
+            _data["stats"]["coinflip"]["biggest_winning_bet"] = max(_data["stats"]["coinflip"]["biggest_winning_bet"], bet_amount)
+        else:
+            await interaction.response.send_message(f"<@{interaction.user.id}> You chose {prediction} but the coin landed on {result}. You lose!\n\nYou lost {bet_amount} voidglow! Your new balance is {_data['balance'] - bet_amount} voidglow.")
+            modify_balance(_data, bet_amount, BALANCE_MODIFIER.lost)
+            _data["stats"]["coinflip"]["total_losings"] += bet_amount
+            _data["stats"]["coinflip"]["incorrect_predictions"] += 1
+            _data["stats"]["coinflip"]["current_streak"] = 0
+            _data["stats"]["coinflip"]["biggest_losing_bet"] = max(_data["stats"]["coinflip"]["biggest_losing_bet"], bet_amount)
+        _data["stats"]["coinflip"]["total_betted"] += bet_amount
+    else:
+        if prediction == result:
+            await interaction.response.send_message(f"<@{interaction.user.id}> You chose {prediction} and the coin landed on {result}. You win! :tada:")
+            _data["stats"]["coinflip"]["correct_predictions"] += 1
+        else:
+            await interaction.response.send_message(f"<@{interaction.user.id}> You chose {prediction} but the coin landed on {result}. You lose!")
+            _data["stats"]["coinflip"]["incorrect_predictions"] += 1
+            
+    _data["stats"]["coinflip"]["games_played"] += 1
+
+    await update_badges(_data, interaction)
+
+    with open(_filepath, "w") as file:
+        json.dump(_data, file, indent=4)
 
 @client.event
 async def on_ready():
