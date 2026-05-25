@@ -835,9 +835,9 @@ async def help(interaction:discord.Interaction):
         name="rate",
         description="Rate something on a scale of 1-10."
 )
-async def rate(interaction:discord.Interaction, message:str):
-    not_so_random = random.Random(message.content)
-    await interaction.response.send_message(f"I rate {message} a {str(not_so_random.randint(0, 10))}/10!")
+async def rate(interaction:discord.Interaction, thing:str):
+    not_so_random = random.Random(thing.content)
+    await interaction.response.send_message(f"I rate {thing} a {str(not_so_random.randint(0, 10))}/10!")
 
 @commands.command(
         name="shitty_story",
