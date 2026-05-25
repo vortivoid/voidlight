@@ -121,6 +121,9 @@ def get_user_data_from_id(id: str, name: str = ""):
         json.dump(data, file, indent=4)
     return data
 
+def get_user_file_path(user:discord.User):
+    return f"userdata/{user.id}.json"
+
 class BALANCE_MODIFIER(Enum):
     earned = 1
     lost = 2
