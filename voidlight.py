@@ -853,7 +853,7 @@ async def daily(interaction:discord.Interaction):
         name="balance",
         description="Get your current voidglow balance."
 )
-async def balance(interaction:discord.Interaction, user:Optional[discord.User] = None, show_to_others:Literal["Yes", "No"] = "No"):
+async def balance(interaction:discord.Interaction, user:Optional[discord.User] = None, show_to_others:Literal["Yes", "No"] = "Yes"):
     if user is None:
         user = interaction.user
     target_data = get_user_data(user)
