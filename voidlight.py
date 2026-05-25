@@ -173,6 +173,14 @@ async def grant_badge(user: dict, badge_name: str):
     user["badges"].append(badge_name)
     return badge_name
 
+async def revoke_badge(user: dict, badge_name: str):
+    if badge_name not in user["badges"]:
+        return None
+    if badge_name not in BADGES:
+        return None
+    user["badges"].remove(badge_name)
+    return badge_name
+
 async def update_badges(user: dict, interaction:discord.Interaction):
     if "stats" not in user:
         return False
@@ -961,8 +969,29 @@ async def grantbadge(interaction:discord.Interaction, user:discord.User, badge_n
         json.dump(_recipient_data, file, indent=4)
     await interaction.response.send_message(f"{user.name} has been granted the {badge_name} badge!")
 
-
-
+@commands.command(
+        name="revokebadge",
+        description="Revoke a badge from a user (Admin Only)"
+)
+async def revokebadge(interaction:discord.Interaction, user:discord.User, badge_name:str):
+    if interaction.user.id != 1377945939859341373:
+        await interaction.response.send_message("You do not have permission to use that command.", ephemeral=True)
+        return
+    if badge_name not in BADGES:
+        await interaction.response.send_message("That badge does not exist!", ephemeral=True)
+        return
+    _recipient_data = get_user_data(user)
+    if badge_name not in _recipient_data["badges"]:
+        await interaction.response.send_message(f"{user.name} does not have the {badge_name} badge!", ephemeral=True)
+        return
+    success = await revoke_badge(_recipient_data, badge_name)
+    if success is None:
+        await interaction.response.send_message("There was an error revoking this badge. Please ensure you entered the name correctly!", ephemeral=True)
+        return
+    _recipient_filepath = get_user_file_path(user)
+    with open(_recipient_filepath, "w") as file:
+        json.dump(_recipient_data, file, indent=4)
+    await interaction.response.send_message(f"{user.name} has had the {badge_name} badge revoked!")
 
 
 
