@@ -912,14 +912,16 @@ async def transfer(interaction:discord.Interaction, user:discord.User, amount:in
     _sender_file = get_user_file_path(interaction.user)
     _recipient_file = get_user_file_path(user)
     with open(_sender_file, "w") as file:
-        json.dump(_data, file, indent=4)
+        json.dump(_sender_data, file, indent=4)
     _recipient_data["balance"] += amount
     _recipient_data["stats"]["voidglow"]["received"] += amount
     with open(_recipient_file, "w") as file:
         json.dump(_recipient_data, file, indent=4)
-    await interaction.response.send_message(f"{_data["latest_known_name"]} sent {amount} voidglow to {_recipient_data["latest_known_name"]}!\n" \
-                                            f"<@{interaction.user.name}>'s balance: {_sender_data["balance"]}!\n" \
-                                            f"<@{user.name}>'s balance: {_recipient_data["balance"]}!")
+    await interaction.response.send_message(
+        f"{_sender_data['latest_known_name']} sent {amount} voidglow to {_recipient_data['latest_known_name']}!\n"
+        f"<@{interaction.user.id}>'s balance: {_sender_data['balance']}!\n"
+        f"<@{user.id}>'s balance: {_recipient_data['balance']}!"
+    )
 
 
 @commands.command(
