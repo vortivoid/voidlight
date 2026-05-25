@@ -698,6 +698,7 @@ commands = app_commands.CommandTree(client)
 async def say(interaction:discord.Interaction, message:str):
     await interaction.response.send_message(f"<@{interaction.user.id}> says:\n{message}")
 
+
 @commands.command(
         name="uwuify",
         description="Send an uwu-ified message!"
@@ -706,12 +707,14 @@ async def uwuify(interaction:discord.Interaction, message:str):
     new_message = uwu.run(message)
     await interaction.response.send_message(f"<@{interaction.user.id}> says:\n{new_message}")
 
+
 @commands.command(
         name="decide",
         description="Get Voidlight to decide between 2 things."
 )
 async def decide(interaction:discord.Interaction, option1:str, option2:str):
     await interaction.response.send_message(f"Options: `{option1}` & `{option2}`\n\nI choose... {random.choice([option1, option2])}")
+
 
 @commands.command(
         name="help",
@@ -720,6 +723,7 @@ async def decide(interaction:discord.Interaction, option1:str, option2:str):
 async def help(interaction:discord.Interaction):
     await interaction.response.send_message(get_help_message(), ephemeral=True)
 
+
 @commands.command(
         name="rate",
         description="Rate something on a scale of 1-10."
@@ -727,6 +731,7 @@ async def help(interaction:discord.Interaction):
 async def rate(interaction:discord.Interaction, thing:str):
     not_so_random = random.Random(thing.content)
     await interaction.response.send_message(f"I rate {thing} a {str(not_so_random.randint(0, 10))}/10!")
+
 
 @commands.command(
         name="shitty_story",
@@ -738,6 +743,7 @@ async def shitty_story(interaction:discord.Interaction, names:str):
         await interaction.response.send_message("Please provide a list of characters! Eg: '/shittystory bob jane mark sharon'", ephemeral=True)
     else:
         await interaction.response.send_message(str(shit_story_generator.generate(name_list)))
+
 
 @commands.command(
         name="eightball",
@@ -751,6 +757,7 @@ async def eightball(interaction:discord.Interaction, prompt:str):
     else:
         await interaction.response.send_message(f'**Prompt**: "{prompt}"\n\n**Response**: "{response}"')
 
+
 @commands.command(
         name="typecheck",
         description="See how different types interact with the specified Pokemon."
@@ -760,6 +767,7 @@ async def typecheck(interaction:discord.Interaction, pokemon:str):
         await interaction.response.send_message(PkmnResistanceCalculator.calculate(pokemon))
     except:
         await interaction.response.send_message("Sorry, this Pokemon could not be checked. Make sure you spelt it correctly!", ephemeral=True)
+
 
 @commands.command(
         name="daily",
@@ -792,6 +800,7 @@ async def daily(interaction:discord.Interaction):
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
 
+
 @commands.command(
         name="balance",
         description="Get your current voidglow balance."
@@ -804,6 +813,7 @@ async def balance(interaction:discord.Interaction, user:Optional[discord.User], 
         await interaction.response.send_message(f"{user.name}'s balance is {target_data["balance"]} voidglow.")
     else:
         await interaction.response.send_message(f"{user.name}'s balance is {target_data["balance"]} voidglow.", ephemeral=True)
+
 
 @commands.command(
         name="coinflip",
@@ -861,6 +871,7 @@ async def coinflip(interaction:discord.Interaction, prediction:Optional[Literal[
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
 
+
 @commands.command(
         name="shop",
         description="Display items in the shop that can be purchased with voidglow."
@@ -873,6 +884,7 @@ async def shop(interaction:discord.Interaction):
             continue
         itemlist += f"- {BADGES[id]["title"]} ({cost} voidglow): {BADGES[id]["description"]}\n"
     await interaction.response.send_message(f"Here are the current items:\n{itemlist}\nBuy items with !buy [item name]", ephemeral=True)
+
 
 @commands.command(
     name="buy",
@@ -905,6 +917,7 @@ async def buy(interaction:discord.Interaction, item:str):
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
 
+
 @commands.command(
         name="badges",
         description="List your currently-owned badges."
@@ -933,6 +946,7 @@ async def badges(interaction:discord.Interaction, user:Optional[discord.User], s
         await interaction.response.send_message(final_message)
     else:
         await interaction.response.send_message(final_message, ephemeral=True)
+
 
 @client.event
 async def on_ready():
