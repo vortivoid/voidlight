@@ -802,8 +802,8 @@ class MyClient(discord.Client):
 update_all_user_data()
 
 with open("token.json", "r") as file:
-    data = json.load(file)
-    TOKEN = data["token"]
+    _data = json.load(file)
+    TOKEN = _data["token"]
 
 intents = discord.Intents.default()
 intents.message_content = True
