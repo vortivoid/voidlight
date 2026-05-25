@@ -387,7 +387,7 @@ class MyClient(discord.Client):
                     data["stats"]["coinflip"]["total_betted"] += bet_amount
                     data["stats"]["coinflip"]["games_played"] += 1
 
-                    await update_badges(data)
+                    #await update_badges(data)
 
                     with open(filepath, "w") as file:
                         json.dump(data, file, indent=4)
@@ -705,7 +705,7 @@ class MyClient(discord.Client):
                         data.pop("games")
                         data["stats"]["higherlower"]["games_lost"] += 1
                     
-                    await update_badges(data)
+                    #await update_badges(data)
                         
                     with open(filepath, "w") as file:
                         if "games" in data:
