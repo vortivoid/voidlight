@@ -381,15 +381,6 @@ class MyClient(discord.Client):
                 with open(filepath, "w") as file:
                     json.dump(data, file, indent=4)
                 await reply("I have chosen a random number between 1 and 100. You have 5 attempts.")
-
-            elif split_message[0] == "shop" or split_message[0] == "s":
-                itemlist: str = ""
-                for id, cost in SHOP.items():
-                    if id not in BADGES:
-                        print(f"Error: {id} not found in badges.json!")
-                        continue
-                    itemlist += f"- {BADGES[id]["title"]} ({cost} voidglow): {BADGES[id]["description"]}\n"
-                await reply(f"Here are the current items:\n{itemlist}\nBuy items with !buy [item name]")
             
             elif split_message[0] == "top" or split_message[0] == "leaderboard" or split_message[0] == "lb":
                 global_mode: bool =  False
@@ -421,36 +412,6 @@ class MyClient(discord.Client):
                 for user in sorted_userlist:
                     final_message += f"- {user["latest_known_name"]}: {user["balance"]} voidglow.\n"
                 await reply(final_message)
-
-            elif split_message[0] == "buy":
-                if len(split_message) < 2:
-                    await reply("Useage: !buy [item name]")
-                    return
-                requested_item_name: str = reconstruct_from_split(split_message, 1)
-                requested_item_name = requested_item_name.replace(" ", "").replace("_", "").strip()
-                requested_item_name = requested_item_name.lower()
-                if requested_item_name not in SHOP:
-                    await reply("That item could not be found!")
-                    return
-                if requested_item_name not in BADGES:
-                    await reply("There was a problem fetching this badge's data. Please contact Vorti if this continues.")
-                    return
-                if requested_item_name in data["badges"]:
-                    await reply("You already have this item!")
-                    return
-                cost = SHOP[requested_item_name]
-                if data["balance"] < cost:
-                    await reply("You do not have enough voidglow for this item!")
-                    return
-                success = await grant_badge(data, requested_item_name)
-                if not success:
-                    await reply("There was an error purchasing this badge. Please ensure you entered the name correctly!")
-                    return
-                data["balance"] -= SHOP[requested_item_name]
-                await reply(f"purchased the {BADGES[requested_item_name]["title"]} badge for {cost} voidglow!")
-                data["stats"]["voidglow"]["spent"] += cost
-                with open(filepath, "w") as file:
-                    json.dump(data, file, indent=4)
 
             elif split_message[0] == "badges":
                 if len(split_message) >= 2:
@@ -915,6 +876,50 @@ async def coinflip(interaction:discord.Interaction, prediction:Optional[Literal[
 
     await update_badges(_data, interaction)
 
+    with open(_filepath, "w") as file:
+        json.dump(_data, file, indent=4)
+
+@commands.command(
+        name="shop",
+        description="Display items in the shop that can be purchased with voidglow."
+)
+async def shop(interaction:discord.Interaction):
+    itemlist: str = ""
+    for id, cost in SHOP.items():
+        if id not in BADGES:
+            print(f"Error: {id} not found in badges.json!")
+            continue
+        itemlist += f"- {BADGES[id]["title"]} ({cost} voidglow): {BADGES[id]["description"]}\n"
+    await interaction.response.send_message(f"Here are the current items:\n{itemlist}\nBuy items with !buy [item name]", ephemeral=True)
+
+@commands.command(
+    name="buy",
+    description="Purchase an item from the shop."
+)
+async def buy(interaction:discord.Interaction, item:str):
+    requested_item_name = item.replace(" ", "").replace("_", "").strip().lower()
+    if requested_item_name not in SHOP:
+        await interaction.response.send_message("That item could not be found!", ephemeral=True)
+        return
+    if requested_item_name not in BADGES:
+        await interaction.response.send_message("There was a problem fetching this badge's data. Please contact Vorti if this continues.", ephemeral=True)
+        return
+    _data = get_user_data(interaction.user)
+    if requested_item_name in _data["badges"]:
+        await interaction.response.send_message("You already have this item!", ephemeral=True)
+        return
+    cost = SHOP[requested_item_name]
+    if _data["balance"] < cost:
+        await interaction.response.send_message("You do not have enough voidglow for this item!", ephemeral=True)
+        return
+    success = await grant_badge(_data, requested_item_name)
+    if not success:
+        await interaction.response.send_message("There was an error purchasing this badge. Please ensure you entered the name correctly!", ephemeral=True)
+        return
+    _data["balance"] -= SHOP[requested_item_name]
+    await interaction.response.send_message(f"purchased the {BADGES[requested_item_name]["title"]} badge for {cost} voidglow!")
+    _data["stats"]["voidglow"]["spent"] += cost
+    _filepath = get_user_file_path(interaction.user)
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
 
