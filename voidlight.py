@@ -280,17 +280,6 @@ class MyClient(discord.Client):
                         await reply(str(PkmnResistanceCalculator.calculate(split_message[1])))
                     except:
                         await reply("Sorry, this Pokemon could not be checked. Make sure you spelt it correctly! (Or get Vorti to get off their lazy ass and fix this if you did)")
-            
-            elif split_message[0] == "8ball" or split_message[0] == "8b":
-                if len(split_message) < 2:
-                    await reply("Uhh... you're supposed to ask a question, dumbass.")
-                else:
-                    response = get_eightball_response()
-                    if response is None:
-                        await reply("There was a problem fetching 8ball responses! Please report this issue to Vorti.")
-                        return
-                    else:
-                        await reply(response)
 
             elif split_message[0] == "daily" or split_message[0] == "d":
                 bonus_earned = 0
@@ -849,6 +838,18 @@ async def shitty_story(interaction:discord.Interaction, names:str):
         await interaction.response.send_message("Please provide a list of characters! Eg: '/shittystory bob jane mark sharon'", ephemeral=True)
     else:
         await interaction.response.send_message(str(shit_story_generator.generate(name_list)))
+
+@commands.command(
+        name="eightball",
+        description="Ask a yes/no question and get a deep & insightful response."
+)
+async def eightball(interaction:discord.Interaction, query:str):
+    response = get_eightball_response()
+    if response is None:
+        await interaction.response.send_message("There was a problem fetching 8ball responses! Please report this issue if it continues.", ephemeral=True)
+        return
+    else:
+        await interaction.response.send_message(f"Query: `{query}`\n\n{response}")
 
 
 
