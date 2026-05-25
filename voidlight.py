@@ -339,37 +339,6 @@ class MyClient(discord.Client):
                 with open(filepath, "w") as file:
                     json.dump(data, file, indent=4)
                 await reply("I have chosen a random number between 1 and 100. You have 5 attempts.")
-            
-            elif split_message[0] == "top" or split_message[0] == "leaderboard" or split_message[0] == "lb":
-                global_mode: bool =  False
-                show_all: bool = False
-                if len(split_message) > 1 and split_message[1] == "global":
-                    global_mode = True
-                if len(split_message) > 2 and split_message[2] == "all":
-                    show_all = True
-                userlist = []
-                for entry in os.listdir("userdata/"):
-                    with open(f"userdata/{entry}") as file:
-                        data = json.load(file)
-                    if not show_all and data["latest_known_name"] == "none":
-                        print("No name detected and show_all not set. Skipping entry...")
-                        continue
-                    if not show_all and data["balance"] == 0:
-                        print("No balance detected and show_all not set. Skipping entry...")
-                        continue
-                    if not global_mode:
-                        if str(message.guild.id) in data["associated_guilds"]:
-                            userlist.append(data)
-                    else:
-                        userlist.append(data)
-                sorted_userlist = sorted(userlist, key=lambda x: x["balance"], reverse=True)
-                if global_mode:
-                    final_message = "Global Leaderboard:\n"
-                else:
-                    final_message = f"{message.guild.name} leaderboard:\n"
-                for user in sorted_userlist:
-                    final_message += f"- {user["latest_known_name"]}: {user["balance"]} voidglow.\n"
-                await reply(final_message)
 
             elif split_message[0] == "hangman" or split_message[0] == "hm":
                 if "games" in data:
@@ -953,8 +922,34 @@ async def transfer(interaction:discord.Interaction, user:discord.User, amount:in
                                             f"<@{user.name}>'s balance: {_recipient_data["balance"]}!")
 
 
-
-
+@commands.command(
+        name="leaderboard",
+        description="Displays the leaderboard for either the current guild or globally"
+)
+async def leaderboard(interaction:discord.Interaction, global_mode:Optional[bool] = False, include_0_voidglow_entries:Optional[bool] = False):
+    _userlist = []
+    for _entry in os.listdir("userdata/"):
+        with open(f"userdata/{_entry}") as _file:
+            _data = json.load(_file)
+        if _data["latest_known_name"] == "none":
+            print("No name detected. Skipping entry...")
+            continue
+        if not include_0_voidglow_entries and _data["balance"] == 0:
+            print("No balance detected and include_0_voidglow_entries not True. Skipping entry...")
+            continue
+        if not global_mode:
+            if str(interaction.guild_id) in _data["associated_guilds"]:
+                _userlist.append(_data)
+        else:
+            _userlist.append(_data)
+    sorted_userlist = sorted(_userlist, key=lambda x: x["balance"], reverse=True)
+    if global_mode:
+        final_message = "Global Leaderboard:\n"
+    else:
+        final_message = f"{interaction.guild.name} leaderboard:\n"
+    for user in sorted_userlist:
+        final_message += f"- {user["latest_known_name"]}: {user["balance"]} voidglow.\n"
+    await interaction.response.send_message(final_message)
 
 
 @client.event
