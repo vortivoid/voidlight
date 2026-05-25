@@ -427,19 +427,6 @@ class MyClient(discord.Client):
                 with open(filepath, "w") as file:
                     json.dump(data, file, indent=4)
                 await reply(f"I have chosen a word, try to guess the word or letters the word contains. You have 7 lives and will lose one for every wrong guess.\nprogress: {blanked_answer}")
-                    
-            elif split_message[0] == "streak":
-                today = str(datetime.now().strftime("%Y-%m-%d"))
-                yesterday = (datetime.now() - timedelta(days = 1)).strftime("%Y-%m-%d")
-                if data["last_daily"] != today and data["last_daily"] != yesterday:
-                    await reply("You do not currently have a daily streak! Start claiming daily rewards with !daily to begin a new streak!")
-                    return
-                elif data["last_daily"] != today:
-                    await reply(f"your current daily streak is: {data["daily_streak"]}!\n(Note: You have not yet claimed today's daily reward! Use !daily to get it!)")
-                    return
-                else:
-                    await reply(f"your current daily streak is: {data["daily_streak"]}!")
-                    return
 
             elif split_message[0] == "cancel" or split_message[0] == "c":
                 if "games" not in data:
@@ -947,6 +934,39 @@ async def badges(interaction:discord.Interaction, user:Optional[discord.User], s
     else:
         await interaction.response.send_message(final_message, ephemeral=True)
 
+
+@commands.command(
+        name="streak",
+        description="Get your current daily streak."
+)
+async def streak(interaction:discord.Interaction, user:Optional[discord.User], show_to_others:Optional[bool] = False):
+    show_to_others = not show_to_others
+    today = str(datetime.now().strftime("%Y-%m-%d"))
+    yesterday = (datetime.now() - timedelta(days = 1)).strftime("%Y-%m-%d")
+    if user is None:
+        user = interaction.user
+    _data = get_user_data(user)
+    if _data["last_daily"] != today and _data["last_daily"] != yesterday:
+        if user == interaction.user:
+            await interaction.response.send_message("You do not currently have a daily streak! Start claiming daily rewards with !daily to begin a new streak!", ephemeral=show_to_others)
+            return
+        else:
+            await interaction.response.send_message(f"{user.name} does not currently have a daily streak!", ephemeral=show_to_others)
+            return
+    elif _data["last_daily"] != today:
+        if user == interaction.user:
+            await interaction.response.send_message(f"your current daily streak is: {_data["daily_streak"]}!\n(Note: You have not yet claimed today's daily reward! Use !daily to get it!)", ephemeral=show_to_others)
+            return
+        else:
+            await interaction.response.send_message(f"{user.name}'s current daily streak is: {_data["daily_streak"]}!\n(Note: This user have not yet claimed today's daily reward!)", ephemeral=show_to_others)
+            return
+    else:
+        if user == interaction.user:
+            await interaction.response.send_message(f"your current daily streak is: {_data["daily_streak"]}!", ephemeral=show_to_others)
+            return
+        else:
+            await interaction.response.send_message(f"{user.name}'s current daily streak is: {_data["daily_streak"]}!", ephemeral=show_to_others)
+            return
 
 @client.event
 async def on_ready():
