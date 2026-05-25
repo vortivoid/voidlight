@@ -15,6 +15,7 @@ from utils import get_help_message
 from utils import get_hangman_word
 from utils import get_eightball_response
 from utils import reconstruct_from_split
+from typing import Literal, Optional
 
 MAINTAINENCE_MODE: bool = False
 
@@ -326,19 +327,8 @@ class MyClient(discord.Client):
                 split_message.pop(0) #remove bot mention
 
             response_blocked = True
-            
-            if split_message[0] == "balance" or split_message[0] == "bal" or split_message[0] == "b":
-                if len(split_message) > 1:
-                    if split_message[1][0] != "<":
-                        await reply("Useage: !balance <@user>")
-                        return
-                    target_id: str = split_message[1][2:-1]
-                    target_data = get_user_data_from_id(target_id)
-                    await reply(f"{target_data["latest_known_name"]}'s balance is {target_data["balance"]} voidglow.")
-                else:
-                    await reply(f"{data["latest_known_name"]}'s' balance is {data["balance"]} voidglow.")
         
-            elif split_message[0] == "coinflip" or split_message[0] == "cf" or split_message[0] == "flip":
+            if split_message[0] == "coinflip" or split_message[0] == "cf" or split_message[0] == "flip":
                 local_random = random.Random(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 result = local_random.choice(['heads', 'tails'])
                 if len(split_message) < 2:
@@ -913,7 +903,18 @@ async def daily(interaction:discord.Interaction):
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
 
-
+@commands.command(
+        name="balance",
+        description="Get your current voidglow balance."
+)
+async def balance(interaction:discord.Interaction, user:Optional[discord.User] = None, show_to_others:Literal["Yes", "No"] = "No"):
+    if user is None:
+        user = interaction.user
+    target_data = get_user_data(user)
+    if show_to_others == "Yes":
+        await interaction.response.send_message(f"{user.name}'s balance is {target_data["balance"]} voidglow.")
+    else:
+        await interaction.response.send_message(f"{user.name}'s balance is {target_data["balance"]} voidglow.", ephemeral=True)
 
 
 @client.event
