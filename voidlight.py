@@ -1,9 +1,10 @@
 import discord
+from discord import app_commands
 import random
 import json
 import PkmnResistanceCalculator
 import shit_story_generator
-import uwuify
+import uwuify as uwu
 import os
 from enum import Enum
 from datetime import datetime, timedelta
@@ -834,5 +835,14 @@ with open("token.json", "r") as file:
 intents = discord.Intents.default()
 intents.message_content = True
 
+
 client = MyClient(intents=intents)
+commands = app_commands.CommandTree(client)
+
+@client.event
+async def on_ready():
+    print("Syncing commands...")
+    await commands.sync()
+    print("Commands synced!")
+
 client.run(TOKEN)
