@@ -931,6 +931,7 @@ async def transfer(interaction:discord.Interaction, user:discord.User, amount:in
 async def leaderboard(interaction:discord.Interaction, global_mode:Optional[bool] = False, include_0_voidglow_entries:Optional[bool] = False):
     _userlist = []
     for _entry in os.listdir("userdata/"):
+        _data = {}
         with open(f"userdata/{_entry}") as _file:
             _data = json.load(_file)
         if _data["latest_known_name"] == "none":
