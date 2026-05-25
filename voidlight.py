@@ -898,7 +898,7 @@ async def leaderboard(interaction:discord.Interaction, global_mode:Optional[bool
 
 @commands.command(
         name="stats",
-        description="Display your tracked statistics."
+        description="Display a user's tracked statistics."
 )
 async def stats(interaction:discord.Interaction, user:Optional[discord.User]):
     if user is None:
