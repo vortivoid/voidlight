@@ -363,26 +363,6 @@ class MyClient(discord.Client):
                     json.dump(data, file, indent=4)
                 await reply("the game was successfully cancelled.")
 
-            elif split_message[0] == "stats":
-                if len(split_message) >= 2:
-                    target_id = split_message[1][2:-1]
-                    target_data = get_user_data_from_id(target_id)
-                else:
-                    target_id = user_id
-                    target_data = data
-                final_message = f"<@{target_id}>'s stats are:"
-                for category, category_data in target_data["stats"].items():
-                    final_message += f"\n**__{category}__**:"
-                    for subcategory, subcategory_data in category_data.items():
-                        final_message += f"\n- {subcategory.replace("_", " ").title()}: {subcategory_data}"
-                await reply(final_message)
-
-            elif split_message[0] == "listbadges" or split_message[0] == "allbadges" or split_message[0] == "badgelist":
-                final_message:str = "All Badges:\n"
-                for _, badgedata in BADGES.items():
-                    final_message += f"- {badgedata["title"]}: {badgedata["description"]}\n"
-                await reply(final_message)
-
 
             # Admin Commands
             elif split_message[0] == "modvoidglow" or split_message[0] == "modifyvoidglow":
@@ -953,6 +933,33 @@ async def leaderboard(interaction:discord.Interaction, global_mode:Optional[bool
     for user in sorted_userlist:
         final_message += f"- {user["latest_known_name"]}: {user["balance"]} voidglow.\n"
     await interaction.response.send_message(final_message)
+
+
+@commands.command(
+        name="stats",
+        description="Display your tracked statistics."
+)
+async def stats(interaction:discord.Interaction, user:Optional[discord.User]):
+    if user is None:
+        user = interaction.user
+    _data = get_user_data(user)
+    final_message = f"{user.name}'s stats are:"
+    for category, category_data in _data["stats"].items():
+        final_message += f"\n**__{category}__**:"
+        for subcategory, subcategory_data in category_data.items():
+            final_message += f"\n- {subcategory.replace("_", " ").title()}: {subcategory_data}"
+    await interaction.response.send_message(final_message)
+
+
+@commands.command(
+        name="listbadges",
+        description="Lists all the badges that currently exist."
+)
+async def listbadges(interaction:discord.Interaction):
+    final_message:str = "All Badges:\n"
+    for _, badgedata in BADGES.items():
+        final_message += f"- {badgedata["title"]}: {badgedata["description"]}\n"
+    await interaction.response.send_message(final_message, ephemeral=True)
 
 
 @client.event
