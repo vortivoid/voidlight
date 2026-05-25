@@ -164,6 +164,129 @@ def modify_balance(user: dict, amount: int, modifier: BALANCE_MODIFIER):
             user["stats"]["voidglow"]["granted"] += amount
             return True
 
+async def grant_badge(user: dict, badge_name: str):
+    if badge_name in user["badges"]:
+        return None
+    if badge_name not in BADGES:
+        return None
+    user["badges"].append(badge_name)
+    return badge_name
+
+async def update_badges(user: dict, interaction:discord.Interaction):
+    if "stats" not in user:
+        return False
+    _earned_badges:list = []
+    if user["stats"]["daily"]["longest_streak"] >= 3:
+        _result = await grant_badge(user, "freshface")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["daily"]["longest_streak"] >= 7:
+        _result = await grant_badge(user, "1weekwonder")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["daily"]["longest_streak"] >= 14:
+        _result = await grant_badge(user, "fortnighter")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["daily"]["longest_streak"] >= 30:
+        _result = await grant_badge(user, "loyaluser")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["daily"]["longest_streak"] >= 100:
+        _result = await grant_badge(user, "professionalstreaker")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["daily"]["longest_streak"] >= 365:
+        _result = await grant_badge(user, "lifelongfriend")
+        if _result is not None:
+            _earned_badges.append(_result)
+
+    if user["stats"]["coinflip"]["biggest_winning_bet"] >= 1000:
+        _result = await grant_badge(user, "risktaker")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["coinflip"]["biggest_winning_bet"] >= 10000:
+        _result = await grant_badge(user, "bigrisktaker")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["coinflip"]["biggest_winning_bet"] >= 100000:
+        _result = await grant_badge(user, "hugerisktaker")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["coinflip"]["biggest_winning_bet"] >= 500000:
+        _result = await grant_badge(user, "instantmillionaire")
+        if _result is not None:
+            _earned_badges.append(_result)
+
+    if user["stats"]["coinflip"]["longest_streak"] >= 5:
+        _result = await grant_badge(user, "flippingpro")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["coinflip"]["longest_streak"] >= 10:
+        _result = await grant_badge(user, "flippingmaster")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["coinflip"]["longest_streak"] >= 12:
+        _result = await grant_badge(user, "flippingshinyhunter")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["coinflip"]["longest_streak"] >= 13:
+        _result = await grant_badge(user, "flippingshinyhunter")
+        if _result is not None:
+            _earned_badges.append(_result)
+
+    if user["stats"]["coinflip"]["games_played"] >= 500:
+        _result = await grant_badge(user, "gamblingaddict")
+        if _result is not None:
+            _earned_badges.append(_result)
+
+    if user["stats"]["coinflip"]["total_winnings"] >= 100000:
+        _result = await grant_badge(user, "successfulgambler")
+        if _result is not None:
+            _earned_badges.append(_result)
+        
+    if user["stats"]["higherlower"]["first_attempt_wins"] >= 1:
+        _result = await grant_badge(user, "luckyguesser")
+        if _result is not None:
+            _earned_badges.append(_result)
+    if user["stats"]["higherlower"]["first_attempt_wins"] >= 5:
+        _result = await grant_badge(user, "mindreader")
+        if _result is not None:
+            _earned_badges.append(_result)
+    
+    if user["stats"]["hangman"]["flawless_wins"] >= 5:
+        _result = await grant_badge(user, "flawlesswordfinder")
+        if _result is not None:
+            _earned_badges.append(_result)
+    
+    if user["stats"]["hangman"]["games_played"] >= 100:
+        _result = await grant_badge(user, "ropebunny")
+        if _result is not None:
+            _earned_badges.append(_result)
+    
+    if user["stats"]["hangman"]["games_won"] >= 20:
+        _result = await grant_badge(user, "lifesaver")
+        if _result is not None:
+            _earned_badges.append(_result)
+    
+    if user["stats"]["hangman"]["flawless_wins"] >= 5:
+        _result = await grant_badge(user, "flawlesswordfinder")
+        if _result is not None:
+            _earned_badges.append(_result)
+    
+    if len(user["badges"]) >= 10:
+        _result = await grant_badge(user, "badgecollector")
+        if _result is not None:
+            _earned_badges.append(_result)
+
+    if len(_earned_badges) == 0:
+        return
+    elif len(_earned_badges) == 1:
+        interaction.followup.send(f"You earned the {_earned_badges[0]} badge!")
+    else:
+        interaction.followup.send(f"You earned the following badges:\n{", ".join(str(item) for item in _earned_badges)}")
+
+
 class MyClient(discord.Client):
 
     async def process_message(self, message):
@@ -189,77 +312,6 @@ class MyClient(discord.Client):
         # Process Functions
         async def reply(text: str):
             await message.channel.send(f"<@{user_id}>\n{text}")
-        
-        async def grant_badge(user: dict, badge_name: str):
-            if badge_name in user["badges"]:
-                return False
-            if badge_name not in BADGES:
-                return False
-            badge = BADGES[badge_name]
-            user["badges"].append(badge_name)
-            await message.channel.send(f"<@{user_id}> has earned the {badge["title"]} badge!")
-            return True
-
-        async def update_badges(user: dict):
-            if "stats" not in user:
-                return False
-            if user["stats"]["daily"]["longest_streak"] >= 3:
-                await grant_badge(user, "freshface")
-            if user["stats"]["daily"]["longest_streak"] >= 7:
-                await grant_badge(user, "1weekwonder")
-            if user["stats"]["daily"]["longest_streak"] >= 14:
-                await grant_badge(user, "fortnighter")
-            if user["stats"]["daily"]["longest_streak"] >= 30:
-                await grant_badge(user, "loyaluser")
-            if user["stats"]["daily"]["longest_streak"] >= 100:
-                await grant_badge(user, "professionalstreaker")
-            if user["stats"]["daily"]["longest_streak"] >= 365:
-                await grant_badge(user, "lifelongfriend")
-
-            if user["stats"]["coinflip"]["biggest_winning_bet"] >= 1000:
-                await grant_badge(user, "risktaker")
-            if user["stats"]["coinflip"]["biggest_winning_bet"] >= 10000:
-                await grant_badge(user, "bigrisktaker")
-            if user["stats"]["coinflip"]["biggest_winning_bet"] >= 100000:
-                await grant_badge(user, "hugerisktaker")
-            if user["stats"]["coinflip"]["biggest_winning_bet"] >= 500000:
-                await grant_badge(user, "instantmillionaire")
-
-            if user["stats"]["coinflip"]["longest_streak"] >= 5:
-                await grant_badge(user, "flippingpro")
-            if user["stats"]["coinflip"]["longest_streak"] >= 10:
-                await grant_badge(user, "flippingmaster")
-            if user["stats"]["coinflip"]["longest_streak"] >= 12:
-                await grant_badge(user, "flippingshinyhunter")
-            if user["stats"]["coinflip"]["longest_streak"] >= 13:
-                await grant_badge(user, "flippingshinyhunter")
-
-            if user["stats"]["coinflip"]["games_played"] >= 500:
-                await grant_badge(user, "gamblingaddict")
-
-            if user["stats"]["coinflip"]["total_winnings"] >= 100000:
-                await grant_badge(user, "successfulgambler")
-                
-            if user["stats"]["higherlower"]["first_attempt_wins"] >= 1:
-                await grant_badge(user, "luckyguesser")
-            if user["stats"]["higherlower"]["first_attempt_wins"] >= 5:
-                await grant_badge(user, "mindreader")
-            
-            if user["stats"]["hangman"]["flawless_wins"] >= 5:
-                await grant_badge(user, "flawlesswordfinder")
-            
-            if user["stats"]["hangman"]["games_played"] >= 100:
-                await grant_badge(user, "ropebunny")
-            
-            if user["stats"]["hangman"]["games_won"] >= 20:
-                await grant_badge(user, "lifesaver")
-            
-            if user["stats"]["hangman"]["flawless_wins"] >= 5:
-                await grant_badge(user, "flawlesswordfinder")
-            
-            if len(user["badges"]) >= 10:
-                await grant_badge(user, "badgecollector")
-            
 
         # Commands
         if message.content[0] == "!" or split_message[0] == "<@1388908602932203520>":
