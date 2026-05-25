@@ -413,24 +413,6 @@ class MyClient(discord.Client):
                     final_message += f"- {user["latest_known_name"]}: {user["balance"]} voidglow.\n"
                 await reply(final_message)
 
-            elif split_message[0] == "badges":
-                if len(split_message) >= 2:
-                    target_id: str = split_message[1][2:-1]
-                    target_data = get_user_data_from_id(target_id)
-                else:
-                    target_id = user_id
-                    target_data = data
-                if target_data["badges"] == {} and len(split_message) < 2:
-                    await reply("you do not have any badges!")
-                    return
-                elif target_data["badges"] == {}:
-                    await reply("that user does not have any badges!")
-                
-                final_message: str = f"<@{target_id}>'s badges:"
-                for badge_name in target_data["badges"]:
-                    final_message += f"\n{BADGES[badge_name]["title"]}: {BADGES[badge_name]["description"]}"
-                await reply(final_message)
-
             elif split_message[0] == "hangman" or split_message[0] == "hm":
                 if "games" in data:
                     await reply("You have a game in progress! Type !cancel to end the game.")
@@ -814,11 +796,11 @@ async def daily(interaction:discord.Interaction):
         name="balance",
         description="Get your current voidglow balance."
 )
-async def balance(interaction:discord.Interaction, user:Optional[discord.User] = None, show_to_others:Literal["Yes", "No"] = "Yes"):
+async def balance(interaction:discord.Interaction, user:Optional[discord.User], show_to_others:Literal["yes", "no"] = "yes"):
     if user is None:
         user = interaction.user
     target_data = get_user_data(user)
-    if show_to_others == "Yes":
+    if show_to_others == "yes":
         await interaction.response.send_message(f"{user.name}'s balance is {target_data["balance"]} voidglow.")
     else:
         await interaction.response.send_message(f"{user.name}'s balance is {target_data["balance"]} voidglow.", ephemeral=True)
@@ -922,6 +904,35 @@ async def buy(interaction:discord.Interaction, item:str):
     _filepath = get_user_file_path(interaction.user)
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
+
+@commands.command(
+        name="badges",
+        description="List your currently-owned badges."
+)
+async def badges(interaction:discord.Interaction, user:Optional[discord.User], show_to_others:Literal["yes", "no"] = "yes"):
+    if user is None:
+        user = interaction.user
+    _data = get_user_data(user)
+    if _data["badges"] == {} and user == interaction.user:
+        if show_to_others == "yes":
+            await interaction.response.send_message("you do not have any badges!")
+        else:
+            await interaction.response.send_message("you do not have any badges!", ephemeral=True)
+        return
+    elif _data["badges"] == {}:
+        if show_to_others == "yes":
+            await interaction.response.send_message(f"{user.name} does not have any badges!")
+        else:
+            await interaction.response.send_message(f"{user.name} does not have any badges!", ephemeral=True)
+        return
+    
+    final_message: str = f"{user.name}'s badges:"
+    for badge_name in _data["badges"]:
+        final_message += f"\n{BADGES[badge_name]["title"]}: {BADGES[badge_name]["description"]}"
+    if show_to_others == "yes":
+        await interaction.response.send_message(final_message)
+    else:
+        await interaction.response.send_message(final_message, ephemeral=True)
 
 @client.event
 async def on_ready():
