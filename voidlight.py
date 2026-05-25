@@ -363,53 +363,6 @@ class MyClient(discord.Client):
                     json.dump(data, file, indent=4)
                 await reply("the game was successfully cancelled.")
 
-
-            # Admin Commands
-            elif split_message[0] == "modvoidglow" or split_message[0] == "modifyvoidglow":
-                if str(user_id) != "1377945939859341373":
-                    await reply("You do not have permission to use that command.")
-                    return
-                if len(split_message) < 3:
-                    await reply("Useage: !modvoidglow [@user] [amount]")
-                    return
-                try:
-                    amount = int(split_message[2])
-                except ValueError:
-                    await reply("Invalid amount. Please enter an integer.")
-                    return
-                recipient_id: str = split_message[1][2:-1]
-                recipient_filepath = f"userdata/{recipient_id}.json"
-                recipient_data = get_user_data_from_id(recipient_id)
-                recipient_data["balance"] += amount
-                recipient_data["stats"]["voidglow"]["granted"] += amount
-                with open(recipient_filepath, "w") as file:
-                    json.dump(recipient_data, file, indent=4)
-                if amount > 0:
-                    await reply(f"Added {amount} to <@{recipient_id}>'s balance. (New balance: {recipient_data["balance"]})")
-                elif amount < 0:
-                    await reply(f"Removed {amount} from <@{recipient_id}>'s balance. (New balance: {recipient_data["balance"]})")
-                else:
-                    await reply(f"Did absolutely fuck all to <@{recipient_id}>'s balance.")
-
-            elif split_message[0] == "grantbadge" or split_message[0] == "addbadge":
-                if str(user_id) != "1377945939859341373":
-                    await reply("You do not have permission to use that command.")
-                    return
-                if len(split_message) < 3:
-                    await reply("Useage: !grantbadge [@user] [badgename]")
-                    return
-                badge_name = split_message[2]
-                recipient_id: str = split_message[1][2:-1]
-                recipient_filepath = f"userdata/{recipient_id}.json"
-                recipient_data = get_user_data_from_id(recipient_id)
-                success = await grant_badge(recipient_data, badge_name)
-                if success == False:
-                    await reply("There was an error purchasing this badge. Please ensure you entered the name correctly!")
-                    return
-                with open(recipient_filepath, "w") as file:
-                    json.dump(recipient_data, file, indent=4)
-                await reply(f"<@{recipient_id}> has been granted the {badge_name} badge!")
-
             # Undocumented/Secret Commands
             elif split_message[0] == "helpmesleep": 
                 await reply("sure thing bestiepop, just stand still a sec...")
@@ -960,6 +913,64 @@ async def listbadges(interaction:discord.Interaction):
     for _, badgedata in BADGES.items():
         final_message += f"- {badgedata["title"]}: {badgedata["description"]}\n"
     await interaction.response.send_message(final_message, ephemeral=True)
+
+
+@commands.command(
+        name="modvoidglow",
+        description="Add or remove voidglow from a user's balance (Admin Only)"
+)
+async def modvoidglow(interaction:discord.Interaction, user:discord.User, amount:int):
+    if interaction.user.id != 1377945939859341373:
+        await interaction.response.send_message("You do not have permission to use that command.", ephemeral=True)
+        return
+    _recipient_filepath = get_user_file_path(user)
+    _recipient_data = get_user_data(user)
+    _recipient_data["balance"] += amount
+    _recipient_data["stats"]["voidglow"]["granted"] += amount
+    with open(_recipient_filepath, "w") as file:
+        json.dump(_recipient_data, file, indent=4)
+    if amount > 0:
+        await interaction.response.send_message(f"Added {amount} to {user.name}'s balance. (New balance: {_recipient_data['balance']})")
+    elif amount < 0:
+        await interaction.response.send_message(f"Removed {amount} from {user.name}'s balance. (New balance: {_recipient_data['balance']})")
+    else:
+        await interaction.response.send_message(f"Did absolutely fuck all to {user.name}'s balance.")
+
+
+@commands.command(
+        name="grantbadge",
+        description="Grant a badge to a user (Admin Only)"
+)
+async def grantbadge(interaction:discord.Interaction, user:discord.User, badge_name:str):
+    if interaction.user.id != 1377945939859341373:
+        await interaction.response.send_message("You do not have permission to use that command.", ephemeral=True)
+        return
+    if badge_name not in BADGES:
+        await interaction.response.send_message("That badge does not exist!", ephemeral=True)
+        return
+    _recipient_data = get_user_data(user)
+    if badge_name in _recipient_data["badges"]:
+        await interaction.response.send_message(f"{user.name} already has the {badge_name} badge!", ephemeral=True)
+        return
+    success = await grant_badge(_recipient_data, badge_name)
+    if success is None:
+        await interaction.response.send_message("There was an error purchasing this badge. Please ensure you entered the name correctly!", ephemeral=True)
+        return
+    _recipient_filepath = get_user_file_path(user)
+    with open(_recipient_filepath, "w") as file:
+        json.dump(_recipient_data, file, indent=4)
+    await interaction.response.send_message(f"{user.name} has been granted the {badge_name} badge!")
+
+
+
+
+
+
+
+
+
+
+
 
 
 @client.event
