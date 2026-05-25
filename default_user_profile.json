@@ -25,7 +25,8 @@
             "current_streak": 0,
             "longest_streak": 0,
             "biggest_winning_bet": 0,
-            "biggest_losing_bet": 0
+            "biggest_losing_bet": 0,
+            "biggest_bet": 0
         },
         "higherlower": {
             "total_winnings": 0,
