@@ -271,31 +271,8 @@ class MyClient(discord.Client):
                 split_message.pop(0) #remove bot mention
 
             response_blocked = True
-
-            if split_message[0] == "help":
-                await message.channel.send(get_help_message())
-
-            elif split_message[0] == "say":
-                if len(split_message) < 2:
-                    await message.channel.send("*says nothing*\n(Useage: !say [message])")
-                else:
-                    await message.channel.send(f"{reconstruct_from_split(split_message, 1)} \n-<@{user_id}>")
-                    await message.delete()
             
-            elif split_message[0] == "decide":
-                if len(split_message) < 3:
-                    await reply("I need at least 2 options you freaking dingus")
-                else:
-                    await reply(f"I choose... {split_message[random.randint(1, (len(split_message) - 1))]}")
-            
-            elif split_message[0] == "rate":
-                if len(split_message) < 2:
-                    await reply("Rate what exactly? (Usage:\n!rate [thing to rate])")
-                else:
-                    not_so_random = random.Random(message.content)
-                    await reply("I rate " + reconstruct_from_split(split_message, 1) + " a " + str(not_so_random.randint(0, 10)) + "/10!")
-            
-            elif split_message[0] == "typecheck" or split_message[0] == "tc":
+            if split_message[0] == "typecheck" or split_message[0] == "tc":
                 if len(split_message) < 2:
                     await reply("Usage:\n!typecheck [pokemon]")
                 else:
@@ -303,12 +280,6 @@ class MyClient(discord.Client):
                         await reply(str(PkmnResistanceCalculator.calculate(split_message[1])))
                     except:
                         await reply("Sorry, this Pokemon could not be checked. Make sure you spelt it correctly! (Or get Vorti to get off their lazy ass and fix this if you did)")
-
-            elif split_message[0] == "shittystory" or split_message[0] == "ss":
-                if len(split_message) < 2:
-                    await reply("Please provide a list of characters! Eg: '!shittystory bob jane mark sharon'")
-                else:
-                    await reply(str(shit_story_generator.generate(split_message[1:len(split_message)])))
             
             elif split_message[0] == "8ball" or split_message[0] == "8b":
                 if len(split_message) < 2:
@@ -320,14 +291,6 @@ class MyClient(discord.Client):
                         return
                     else:
                         await reply(response)
-            
-            elif split_message[0] == "uwuify" or split_message[0] == "uwu":
-                if len(split_message) < 2:
-                    await reply("U-uhhm, y-yuwu need tu put a s-swentence, siwwy biwwy >w<")
-                else:
-                    new_message = uwuify.run(reconstruct_from_split(split_message, 1))
-                    await message.channel.send(f"<@{user_id}> says:\n{new_message}")
-                    await message.delete()
 
             elif split_message[0] == "daily" or split_message[0] == "d":
                 bonus_earned = 0
@@ -838,6 +801,57 @@ intents.message_content = True
 
 client = MyClient(intents=intents)
 commands = app_commands.CommandTree(client)
+
+@commands.command(
+    name="say",
+    description="Say whatever you want :p"
+)
+async def say(interaction:discord.Interaction, message:str):
+    await interaction.response.send_message(f"<@{interaction.user.id}> says:\n{message}")
+
+@commands.command(
+        name="uwuify",
+        description="Send an uwu-ified message!"
+)
+async def uwuify(interaction:discord.Interaction, message:str):
+    new_message = uwu.run(message)
+    await interaction.response.send_message(f"<@{interaction.user.id}> says:\n{new_message}")
+
+@commands.command(
+        name="decide",
+        description="Get Voidlight to decide between 2 things."
+)
+async def decide(interaction:discord.Interaction, option1:str, option2:str):
+    await interaction.response.send_message(f"Options: `{option1}` & `{option2}`\n\nI choose... {random.choice([option1, option2])}")
+
+@commands.command(
+        name="help",
+        description="Displays all avaliable commands."
+)
+async def help(interaction:discord.Interaction):
+    await interaction.response.send_message(get_help_message(), ephemeral=True)
+
+@commands.command(
+        name="rate",
+        description="Rate something on a scale of 1-10."
+)
+async def rate(interaction:discord.Interaction, message:str):
+    not_so_random = random.Random(message.content)
+    await interaction.response.send_message(f"I rate {message} a {str(not_so_random.randint(0, 10))}/10!")
+
+@commands.command(
+        name="shitty_story",
+        description="Generates a sequence of random events using the provided names"
+)
+async def shitty_story(interaction:discord.Interaction, names:str):
+    name_list = names.replace(" ", "").split(",")    
+    if len(name_list) < 2:
+        await interaction.response.send_message("Please provide a list of characters! Eg: '/shittystory bob jane mark sharon'", ephemeral=True)
+    else:
+        await interaction.response.send_message(str(shit_story_generator.generate(name_list)))
+
+
+
 
 @client.event
 async def on_ready():
