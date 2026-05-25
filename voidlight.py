@@ -329,50 +329,7 @@ class MyClient(discord.Client):
             response_blocked = True
 
             #TODO: Convert all these commands to application commands
-            if split_message[0] == "transfer" or split_message[0] == "trans":
-                if len(split_message) < 3:
-                    await reply("Useage: !transfer [@recipient] [amount]")
-                recipient_id: str = split_message[1][2:-1]
-
-                if user_id == recipient_id:
-                    await reply("You cannot transfer voidglow to yourself!")
-                    return
-                
-                if recipient_id == "1388908602932203520":
-                    await reply("No thank you :3")
-                    return
-
-                try:
-                    amount = int(split_message[2])
-                except ValueError:
-                    await reply("Invalid transfer amount! Please enter a valid number.")
-                    return
-                
-                if amount <= 0:
-                    await reply("Invalid transfer amount! Please enter a positive number.")
-                    return
-                
-                if data["balance"] < amount:
-                    await reply(f"Insufficient voidglow! Your balance is {data["balance"]}!")
-                    return
-
-                recipient_data = get_user_data_from_id(recipient_id)
-                
-                data["balance"] -= amount
-                data["stats"]["voidglow"]["given"] += amount
-                with open(f"userdata/{user_id}.json", "w") as file:
-                    json.dump(data, file, indent=4)
-
-                recipient_data["balance"] += amount
-                recipient_data["stats"]["voidglow"]["received"] += amount
-                with open(f"userdata/{recipient_id}.json", "w") as file:
-                    json.dump(recipient_data, file, indent=4)
-                
-                await message.channel.send(f"{data["latest_known_name"]} sent {amount} voidglow to {recipient_data["latest_known_name"]}!\n" \
-                                            f"<@{user_id}>'s balance: {data["balance"]}!\n" \
-                                            f"<@{recipient_id}>'s balance: {recipient_data["balance"]}!")
-
-            elif split_message[0] == "higherlower" or split_message[0] == "hl" or split_message[0] == "higherorlower":
+            if split_message[0] == "higherlower" or split_message[0] == "hl" or split_message[0] == "higherorlower":
                 if data.__contains__("games"):
                     await reply("You have a game in progress! Type !cancel to end the game.")
                     return
@@ -768,7 +725,6 @@ async def daily(interaction:discord.Interaction):
     if _data["last_daily"] == str(datetime.now().strftime("%Y-%m-%d")):
         await interaction.response.send_message("You have already claimed your daily reward!", ephemeral=True)
         return
-    
     yesterday = (datetime.now() - timedelta(days = 1)).strftime("%Y-%m-%d")
     if _data["last_daily"] == yesterday:
         _data["daily_streak"] += 1
@@ -776,14 +732,11 @@ async def daily(interaction:discord.Interaction):
         bonus_earned = min((STREAK_BONUS * (int(_data["daily_streak"] - 1))), DAILY_BONUS_MAX)
     else:
         _data["daily_streak"] = 1
-    
     total_earnings = DAILY_REWARD + bonus_earned
     modify_balance(_data, total_earnings, BALANCE_MODIFIER.earned)
     _data["stats"]["daily"]["voidglow_earned"] += total_earnings
     _data["last_daily"] = datetime.now().strftime("%Y-%m-%d")
-
     await update_badges(_data, interaction)
-
     await interaction.response.send_message(f"Claimed {total_earnings} voidglow! Your new balance is " + str(_data["balance"]) + f" voidglow. ({_data["daily_streak"]} day streak!)")
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
@@ -816,10 +769,8 @@ async def coinflip(interaction:discord.Interaction, prediction:Optional[Literal[
     if prediction is None:
         await interaction.response.send_message(f"Flipping a coin... It's {result}!")
         return
-    
     _data = get_user_data(interaction.user)
     _filepath = get_user_file_path(interaction.user)
-
     if bet_amount is not None:
         if bet_amount > _data["balance"]:
             await interaction.response.send_message(f"You don't have enough voidglow to make that bet! Your current balance is {str(_data["balance"])} voidglow.", ephemeral=True)
@@ -827,7 +778,6 @@ async def coinflip(interaction:discord.Interaction, prediction:Optional[Literal[
         if bet_amount <= 0:
             await interaction.response.send_message("Please enter a positive number.", ephemeral=True)
             return
-    
         if prediction == result:
             await interaction.response.send_message(f"<@{interaction.user.id}> You chose {prediction} and the coin landed on {result}. You win! :tada:\n\nYou won {bet_amount} voidglow! Your new balance is {_data['balance'] + bet_amount} voidglow.")
             modify_balance(_data, bet_amount, BALANCE_MODIFIER.earned)
@@ -851,11 +801,8 @@ async def coinflip(interaction:discord.Interaction, prediction:Optional[Literal[
         else:
             await interaction.response.send_message(f"<@{interaction.user.id}> You chose {prediction} but the coin landed on {result}. You lose!")
             _data["stats"]["coinflip"]["incorrect_predictions"] += 1
-
     _data["stats"]["coinflip"]["games_played"] += 1
-
     await update_badges(_data, interaction)
-
     with open(_filepath, "w") as file:
         json.dump(_data, file, indent=4)
 
@@ -926,7 +873,6 @@ async def badges(interaction:discord.Interaction, user:Optional[discord.User], s
         else:
             await interaction.response.send_message(f"{user.name} does not have any badges!", ephemeral=True)
         return
-    
     final_message: str = f"{user.name}'s badges:"
     for badge_name in _data["badges"]:
         final_message += f"\n{BADGES[badge_name]["title"]}: {BADGES[badge_name]["description"]}"
@@ -968,6 +914,48 @@ async def streak(interaction:discord.Interaction, user:Optional[discord.User], s
         else:
             await interaction.response.send_message(f"{user.name}'s current daily streak is: {_data["daily_streak"]}!", ephemeral=show_to_others)
             return
+
+
+@commands.command(
+        name="transfer",
+        description="Send some of your voidglow to someone else."
+)
+async def transfer(interaction:discord.Interaction, user:discord.User, amount:int):
+    if user.id == interaction.user.id:
+        await interaction.response.send_message("You cannot transfer voidglow to yourself!", ephemeral=True)
+        return
+    if user.id == 1388908602932203520:
+        await interaction.response.send_message("No thank you :3")
+        return
+    if user.bot or user.system:
+        await interaction.response.send_message("You cannot send voidglow to bots or system accounts.", ephemeral=True)
+        return
+    if amount <= 0:
+        await interaction.response.send_message("Invalid transfer amount! Please enter a positive number.", ephemeral=True)
+        return
+    _sender_data = get_user_data(interaction.user)
+    if _sender_data["balance"] < amount:
+        await interaction.response.send_message(f"Insufficient voidglow! Your balance is {_sender_data["balance"]}!")
+        return
+    _recipient_data = get_user_data(user)
+    _sender_data["balance"] -= amount
+    _sender_data["stats"]["voidglow"]["given"] += amount
+    _sender_file = get_user_file_path(interaction.user)
+    _recipient_file = get_user_file_path(user)
+    with open(_sender_file, "w") as file:
+        json.dump(_data, file, indent=4)
+    _recipient_data["balance"] += amount
+    _recipient_data["stats"]["voidglow"]["received"] += amount
+    with open(_recipient_file, "w") as file:
+        json.dump(_recipient_data, file, indent=4)
+    await interaction.response.send_message(f"{_data["latest_known_name"]} sent {amount} voidglow to {_recipient_data["latest_known_name"]}!\n" \
+                                            f"<@{interaction.user.name}>'s balance: {_sender_data["balance"]}!\n" \
+                                            f"<@{user.name}>'s balance: {_recipient_data["balance"]}!")
+
+
+
+
+
 
 @client.event
 async def on_ready():
