@@ -328,6 +328,7 @@ class MyClient(discord.Client):
 
             response_blocked = True
 
+            #TODO: Convert all these commands to application commands
             if split_message[0] == "transfer" or split_message[0] == "trans":
                 if len(split_message) < 3:
                     await reply("Useage: !transfer [@recipient] [amount]")
