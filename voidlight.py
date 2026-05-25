@@ -800,13 +800,13 @@ async def shitty_story(interaction:discord.Interaction, names:str):
         name="eightball",
         description="Ask a yes/no question and get a deep & insightful response."
 )
-async def eightball(interaction:discord.Interaction, query:str):
+async def eightball(interaction:discord.Interaction, prompt:str):
     response = get_eightball_response()
     if response is None:
         await interaction.response.send_message("There was a problem fetching 8ball responses! Please report this issue if it continues.", ephemeral=True)
         return
     else:
-        await interaction.response.send_message(f"Query: `{query}`\n\n{response}")
+        await interaction.response.send_message(f'**Prompt**: "{prompt}"\n\n**Response**: "{response}"')
 
 @commands.command(
         name="typecheck",
@@ -910,7 +910,7 @@ async def coinflip(interaction:discord.Interaction, prediction:Optional[Literal[
         else:
             await interaction.response.send_message(f"<@{interaction.user.id}> You chose {prediction} but the coin landed on {result}. You lose!")
             _data["stats"]["coinflip"]["incorrect_predictions"] += 1
-            
+
     _data["stats"]["coinflip"]["games_played"] += 1
 
     await update_badges(_data, interaction)
