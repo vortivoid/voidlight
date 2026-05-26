@@ -865,7 +865,7 @@ async def listbadges(interaction:discord.Interaction):
         description="Add or remove voidglow from a user's balance (Admin Only)"
 )
 async def modvoidglow(interaction:discord.Interaction, user:discord.User, amount:int):
-    if interaction.user.id != 1377945939859341373:
+    if interaction.user.id not in get_admins():
         await interaction.response.send_message("You do not have permission to use that command.", ephemeral=True)
         return
     _recipient_filepath = get_user_file_path(user)
@@ -887,7 +887,7 @@ async def modvoidglow(interaction:discord.Interaction, user:discord.User, amount
         description="Grant a badge to a user (Admin Only)"
 )
 async def grantbadge(interaction:discord.Interaction, user:discord.User, badge_name:str):
-    if interaction.user.id != 1377945939859341373:
+    if interaction.user.id not in get_admins():
         await interaction.response.send_message("You do not have permission to use that command.", ephemeral=True)
         return
     if badge_name not in BADGES:
@@ -911,7 +911,7 @@ async def grantbadge(interaction:discord.Interaction, user:discord.User, badge_n
         description="Revoke a badge from a user (Admin Only)"
 )
 async def revokebadge(interaction:discord.Interaction, user:discord.User, badge_name:str):
-    if interaction.user.id != 1377945939859341373:
+    if interaction.user.id not in get_admins():
         await interaction.response.send_message("You do not have permission to use that command.", ephemeral=True)
         return
     if badge_name not in BADGES:
