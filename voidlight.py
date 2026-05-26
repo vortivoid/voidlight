@@ -384,43 +384,42 @@ async def process_higherlower(user:discord.User, message:discord.Message):
         _attempt = int(message.content)
     except ValueError:
         await message.channel.send("That is not a valid number. If you wish to cancel Higher or Lower please type !cancel.")
-        return
-    if _attempt < 1 or _attempt > 100:
-        await message.channel.send("Please enter a number between 1-100!")
-        return
     else:
-        with open(_filepath, "w") as file:
-            _data["games"]["processing"] = True
-            json.dump(_data, file, indent=4)
-        if _attempt != _data["games"]["higherlower"]["answer"]:
-            _data["games"]["higherlower"]["remaining_attempts"] -= 1
+        if _attempt < 1 or _attempt > 100:
+            await message.channel.send("Please enter a number between 1-100!")
+        else:
+            with open(_filepath, "w") as file:
+                _data["games"]["processing"] = True
+                json.dump(_data, file, indent=4)
+            if _attempt != _data["games"]["higherlower"]["answer"]:
+                _data["games"]["higherlower"]["remaining_attempts"] -= 1
 
-        if _attempt < _data["games"]["higherlower"]["answer"]:
-            await message.channel.send(f"higher. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
-        elif _attempt > _data["games"]["higherlower"]["answer"]:
-            await message.channel.send(f"lower. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
-        else:    
-            prize: int = HIGHER_LOWER_PRIZES[_data["games"]["higherlower"]["remaining_attempts"]]
+            if _attempt < _data["games"]["higherlower"]["answer"]:
+                await message.channel.send(f"higher. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
+            elif _attempt > _data["games"]["higherlower"]["answer"]:
+                await message.channel.send(f"lower. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
+            else:    
+                prize: int = HIGHER_LOWER_PRIZES[_data["games"]["higherlower"]["remaining_attempts"]]
 
-            if _data["games"]["higherlower"]["remaining_attempts"] == 5:
-                await message.channel.send("You got it first try!! :D")
-                _data["stats"]["higherlower"]["first_attempt_wins"] += 1
-            else:
-                await message.channel.send(f"You got it! :D. (Finished with {_data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
-            await message.channel.send(f"You have been awarded {prize} voidglow!")
-            _data["balance"] += prize
-            _data["stats"]["voidglow"]["earned"] += prize
-            _data["stats"]["higherlower"]["total_winnings"] += prize
-            _data["stats"]["higherlower"]["games_won"] += 1
-            _data["stats"]["higherlower"]["current_streak"] += 1
-            _data["stats"]["higherlower"]["longest_streak"] = max(_data["stats"]["higherlower"]["longest_streak"], _data["stats"]["higherlower"]["current_streak"])
-            _data.pop("games")
+                if _data["games"]["higherlower"]["remaining_attempts"] == 5:
+                    await message.channel.send("You got it first try!! :D")
+                    _data["stats"]["higherlower"]["first_attempt_wins"] += 1
+                else:
+                    await message.channel.send(f"You got it! :D. (Finished with {_data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
+                await message.channel.send(f"You have been awarded {prize} voidglow!")
+                _data["balance"] += prize
+                _data["stats"]["voidglow"]["earned"] += prize
+                _data["stats"]["higherlower"]["total_winnings"] += prize
+                _data["stats"]["higherlower"]["games_won"] += 1
+                _data["stats"]["higherlower"]["current_streak"] += 1
+                _data["stats"]["higherlower"]["longest_streak"] = max(_data["stats"]["higherlower"]["longest_streak"], _data["stats"]["higherlower"]["current_streak"])
+                _data.pop("games")
 
-        if "games" in _data and _data["games"]["higherlower"]["remaining_attempts"] <= 0:
-            await message.channel.send(f"<@{_user_id}> You ran out of attempts! The answer was: {_data["games"]["higherlower"]["answer"]}!")
-            _data.pop("games")
-            _data["stats"]["higherlower"]["games_lost"] += 1
-            _data["stats"]["higherlower"]["current_streak"] = 0
+            if "games" in _data and _data["games"]["higherlower"]["remaining_attempts"] <= 0:
+                await message.channel.send(f"<@{_user_id}> You ran out of attempts! The answer was: {_data["games"]["higherlower"]["answer"]}!")
+                _data.pop("games")
+                _data["stats"]["higherlower"]["games_lost"] += 1
+                _data["stats"]["higherlower"]["current_streak"] = 0
     with open(_filepath, "w") as file:
         if "games" in _data:
             _data["games"]["higherlower"]["processing"] = False
@@ -981,7 +980,7 @@ async def cancel(interaction:discord.Interaction):
     _data.pop("games")
     with open(get_user_file_path(interaction.user), "w") as file:
         json.dump(_data, file, indent=4)
-    await interaction.response.send_message("the game was successfully cancelled.", ephemeral=True)
+    await interaction.response.send_message("the game was successfully cancelled.")
 
 @client.event
 async def on_ready():
