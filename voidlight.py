@@ -301,7 +301,7 @@ async def process_hangman(user:discord.User, message:discord.Message):
         _data["games"]["hangman"]["processing"] = True
         json.dump(_data, file, indent=4)
     if len(_split_message) > 1:
-        await message.reply("Please only enter 1 letter/word! type !cancel if you wish to end the game.")
+        await message.reply("Please only enter 1 letter/word! type /cancel if you wish to end the game.")
     else:
         if len(message.content) > 1:
             if message.content.lower() == _data["games"]["hangman"]["answer"]:
@@ -663,8 +663,8 @@ async def shop(interaction:discord.Interaction):
         if id not in BADGES:
             print(f"Error: {id} not found in badges.json!")
             continue
-        itemlist += f"- {BADGES[id]["title"]} ({cost} voidglow): {BADGES[id]["description"]}\n"
-    await interaction.response.send_message(f"Here are the current items:\n{itemlist}\nBuy items with !buy [item name]", ephemeral=True)
+        itemlist += f"- {BADGES[id]['title']} ({cost} voidglow): {BADGES[id]['description']}\n"
+    await interaction.response.send_message(f"Here are the current items:\n{itemlist}\nUse /buy [item name] to purchase an item.", ephemeral=True)
 
 
 @commands.command(
@@ -741,14 +741,14 @@ async def streak(interaction:discord.Interaction, user:Optional[discord.User], s
     _data = get_user_data(user)
     if _data["last_daily"] != today and _data["last_daily"] != yesterday:
         if user == interaction.user:
-            await interaction.response.send_message("You do not currently have a daily streak! Start claiming daily rewards with !daily to begin a new streak!", ephemeral=show_to_others)
+            await interaction.response.send_message("You do not currently have a daily streak! Start claiming daily rewards with /daily to begin a new streak!", ephemeral=show_to_others)
             return
         else:
             await interaction.response.send_message(f"{user.name} does not currently have a daily streak!", ephemeral=show_to_others)
             return
     elif _data["last_daily"] != today:
         if user == interaction.user:
-            await interaction.response.send_message(f"your current daily streak is: {_data["daily_streak"]}!\n(Note: You have not yet claimed today's daily reward! Use !daily to get it!)", ephemeral=show_to_others)
+            await interaction.response.send_message(f"your current daily streak is: {_data["daily_streak"]}!\n(Note: You have not yet claimed today's daily reward! Use /daily to get it!)", ephemeral=show_to_others)
             return
         else:
             await interaction.response.send_message(f"{user.name}'s current daily streak is: {_data["daily_streak"]}!\n(Note: This user have not yet claimed today's daily reward!)", ephemeral=show_to_others)
@@ -937,7 +937,7 @@ async def revokebadge(interaction:discord.Interaction, user:discord.User, badge_
 async def higherlower(interaction:discord.Interaction):
     _data = get_user_data(interaction.user)
     if "games" in _data:
-        await interaction.response.send_message("You have a game in progress! Type !cancel to end the game.", ephemeral=True)
+        await interaction.response.send_message("You have a game in progress! Type /cancel to end the game.", ephemeral=True)
         return
     randomnumber = random.randint(1,100)
     _data["games"] = {"higherlower": {"answer": randomnumber, "remaining_attempts": 5}}
@@ -954,7 +954,7 @@ async def higherlower(interaction:discord.Interaction):
 async def hangman(interaction:discord.Interaction):
     _data = get_user_data(interaction.user)
     if "games" in _data:
-        await interaction.response.send_message("You have a game in progress! Type !cancel to end the game.", ephemeral=True)
+        await interaction.response.send_message("You have a game in progress! Type /cancel to end the game.", ephemeral=True)
         return
     randomword = get_hangman_word()
     if randomword is None:
@@ -981,6 +981,18 @@ async def cancel(interaction:discord.Interaction):
     with open(get_user_file_path(interaction.user), "w") as file:
         json.dump(_data, file, indent=4)
     await interaction.response.send_message("the game was successfully cancelled.")
+
+
+@commands.command(
+    name="botsay",
+    description="Make the bot say something (Admin Only)"
+)
+async def botsay(interaction:discord.Interaction, message:str):
+    if interaction.user.id not in get_admins():
+        await interaction.response.send_message("You do not have permission to use that command.", ephemeral=True)
+        return
+    await interaction.response.send_message("Sending message...", ephemeral=True)
+    await interaction.channel.send(message)
 
 @client.event
 async def on_ready():
