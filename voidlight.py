@@ -322,63 +322,6 @@ class MyClient(discord.Client):
         async def reply(text: str):
             await message.channel.send(f"<@{user_id}>\n{text}")
 
-        # Commands
-        if message.content[0] == "!" or split_message[0] == "<@1388908602932203520>":
-            if MAINTAINENCE_MODE:
-                if user_id not in get_admins():
-                    await reply("I am currently undergoing maintainence! Commands are disabled for non-admin users.")
-                    return
-
-            if message.content[0] == "!":
-                split_message[0] = split_message[0][1:len(split_message[0])] #remove !
-            elif split_message[0] == "<@1388908602932203520>":
-                split_message.pop(0) #remove bot mention
-
-            response_blocked = True
-
-            #TODO: Convert all these commands to application commands
-            if split_message[0] == "higherlower" or split_message[0] == "hl" or split_message[0] == "higherorlower":
-                if data.__contains__("games"):
-                    await reply("You have a game in progress! Type !cancel to end the game.")
-                    return
-                randomnumber = random.randint(1,100)
-                data["games"] = {"higherlower": {"answer": randomnumber, "remaining_attempts": 5}}
-                data["stats"]["higherlower"]["games_played"] += 1
-                with open(filepath, "w") as file:
-                    json.dump(data, file, indent=4)
-                await reply("I have chosen a random number between 1 and 100. You have 5 attempts.")
-
-            elif split_message[0] == "hangman" or split_message[0] == "hm":
-                if "games" in data:
-                    await reply("You have a game in progress! Type !cancel to end the game.")
-                    return
-                randomword = get_hangman_word()
-                if randomword is None:
-                    await reply("There was an error fetching the word list. Please report this issue to Vorti.")
-                    return
-                blanked_answer: str = "-" * len(randomword)
-                data["games"] = {"hangman": {"answer": randomword, "remaining_attempts": 7, "progress": blanked_answer, "first_guess": True, "absent_letters": []}}
-                data["stats"]["hangman"]["games_played"] += 1
-                with open(filepath, "w") as file:
-                    json.dump(data, file, indent=4)
-                await reply(f"I have chosen a word, try to guess the word or letters the word contains. You have 7 lives and will lose one for every wrong guess.\nprogress: {blanked_answer}")
-
-            elif split_message[0] == "cancel" or split_message[0] == "c":
-                if "games" not in data:
-                    await reply("you do not have any games active!")
-                data.pop("games")
-                with open(filepath, "w") as file:
-                    json.dump(data, file, indent=4)
-                await reply("the game was successfully cancelled.")
-
-            # Undocumented/Secret Commands
-            elif split_message[0] == "helpmesleep": 
-                await reply("sure thing bestiepop, just stand still a sec...")
-                await reply("https://media.tenor.com/AhBxuESbEQsAAAAi/jefrooo-brick.gif")
-
-            else:
-                response_blocked = False
-
         # Responses
         if response_blocked == False:
             if MAINTAINENCE_MODE and user_id not in get_admins():
@@ -445,6 +388,7 @@ class MyClient(discord.Client):
                         if "games" in data:
                             data["games"]["processing"] = False
                         json.dump(data, file, indent=4)
+
 
             elif "hangman" in data["games"]:
                 if "processing" in data["games"]:
@@ -584,8 +528,7 @@ async def help(interaction:discord.Interaction):
         description="Rate something on a scale of 1-10."
 )
 async def rate(interaction:discord.Interaction, thing:str):
-    not_so_random = random.Random(thing.content)
-    await interaction.response.send_message(f"I rate {thing} a {str(not_so_random.randint(0, 10))}/10!")
+    await interaction.response.send_message(f"I rate {thing} a {str(random.randint(0, 10))}/10!")
 
 
 @commands.command(
@@ -994,13 +937,57 @@ async def revokebadge(interaction:discord.Interaction, user:discord.User, badge_
     await interaction.response.send_message(f"{user.name} has had the {badge_name} badge revoked!")
 
 
+@commands.command(
+        name="higherlower",
+        description="Play a game of higher or lower to win voidglow!"
+)
+async def higherlower(interaction:discord.Interaction):
+    _data = get_user_data(interaction.user)
+    if "games" in _data:
+        await interaction.response.send_message("You have a game in progress! Type !cancel to end the game.", ephemeral=True)
+        return
+    randomnumber = random.randint(1,100)
+    _data["games"] = {"higherlower": {"answer": randomnumber, "remaining_attempts": 5}}
+    _data["stats"]["higherlower"]["games_played"] += 1
+    with open(get_user_file_path(interaction.user), "w") as file:
+        json.dump(_data, file, indent=4)
+    await interaction.response.send_message("I have chosen a random number between 1 and 100. You have 5 attempts.", ephemeral=True)
 
 
+@commands.command(
+        name="hangman",
+        description="Play a game of hangman to win voidglow!"
+)
+async def hangman(interaction:discord.Interaction):
+    _data = get_user_data(interaction.user)
+    if "games" in _data:
+        await interaction.response.send_message("You have a game in progress! Type !cancel to end the game.", ephemeral=True)
+        return
+    randomword = get_hangman_word()
+    if randomword is None:
+        await interaction.response.send_message("There was an error fetching the word list. Please report this issue to Vorti.", ephemeral=True)
+        return
+    blanked_answer: str = "-" * len(randomword)
+    _data["games"] = {"hangman": {"answer": randomword, "remaining_attempts": 7, "progress": blanked_answer, "first_guess": True, "absent_letters": []}}
+    _data["stats"]["hangman"]["games_played"] += 1
+    with open(get_user_file_path(interaction.user), "w") as file:
+        json.dump(_data, file, indent=4)
+    await interaction.response.send_message(f"I have chosen a word, try to guess the word or letters the word contains. You have 7 lives and will lose one for every wrong guess.\nprogress: {blanked_answer}", ephemeral=True)
 
 
-
-
-
+@commands.command(
+        name="cancel",
+        description="Cancel your current game in progress."
+)
+async def cancel(interaction:discord.Interaction):
+    _data = get_user_data(interaction.user)
+    if "games" not in _data:
+        await interaction.response.send_message("You do not have any games active!", ephemeral=True)
+        return
+    _data.pop("games")
+    with open(get_user_file_path(interaction.user), "w") as file:
+        json.dump(_data, file, indent=4)
+    await interaction.response.send_message("the game was successfully cancelled.", ephemeral=True)
 
 @client.event
 async def on_ready():
