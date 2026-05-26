@@ -951,7 +951,7 @@ async def higherlower(interaction:discord.Interaction):
     _data["stats"]["higherlower"]["games_played"] += 1
     with open(get_user_file_path(interaction.user), "w") as file:
         json.dump(_data, file, indent=4)
-    await interaction.response.send_message("I have chosen a random number between 1 and 100. You have 5 attempts.", ephemeral=True)
+    await interaction.response.send_message("I have chosen a random number between 1 and 100. You have 5 attempts.")
 
 
 @commands.command(
@@ -972,7 +972,7 @@ async def hangman(interaction:discord.Interaction):
     _data["stats"]["hangman"]["games_played"] += 1
     with open(get_user_file_path(interaction.user), "w") as file:
         json.dump(_data, file, indent=4)
-    await interaction.response.send_message(f"I have chosen a word, try to guess the word or letters the word contains. You have 7 lives and will lose one for every wrong guess.\nprogress: {blanked_answer}", ephemeral=True)
+    await interaction.response.send_message(f"I have chosen a word, try to guess the word or any letters the word contains.\nYou have 7 lives and will lose one for each wrong guess.\nprogress: {blanked_answer}")
 
 
 @commands.command(
