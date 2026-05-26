@@ -17,7 +17,6 @@ from utils import get_eightball_response
 from utils import reconstruct_from_split
 from typing import Literal, Optional
 
-MAINTAINENCE_MODE: bool = False
 
 DAILY_REWARD: int = 10
 STREAK_BONUS: int = 10
@@ -295,50 +294,144 @@ async def update_badges(user: dict, interaction:discord.Interaction):
     else:
         interaction.followup.send(f"You earned the following badges:\n{", ".join(str(item) for item in _earned_badges)}")
 
+async def process_hangman(user:discord.User, message:discord.Message):
+    print("Processing hangman guess...")
+    _split_message: list[str] = message.content.split()
+    _data = get_user_data(user)
+    _filepath = get_user_file_path(user)
+    print("Writing to file...")
+    with open(_filepath, "w") as file:
+        _data["games"]["processing"] = True
+        json.dump(_data, file, indent=4)
+        print("File written.")
+    if len(_split_message) > 1:
+        print("Invalid input: More than 1 word entered.")
+        await message.reply("Please only enter 1 letter/word! type !cancel if you wish to end the game.")
+    else:
+        print("Input accepted, processing guess...")
+        if len(message.content) > 1:
+            if message.content.lower() == _data["games"]["hangman"]["answer"]:
+                print("Correct word guessed!")
+                if _data["games"]["hangman"]["first_guess"] == True:
+                    print("First guess win!")
+                    await message.channel.send(f"you got it on your first guess! The word was: {_data["games"]["hangman"]["answer"]}!")
+                    _data["stats"]["hangman"]["first_attempt_wins"] += 1
+                    prize: int = HANGMAN_PRIZES["first_try"]
+                else:
+                    print("Flawless win!")
+                    await message.channel.send(f"you got it! The word was: {_data["games"]["hangman"]["answer"]}!\nFinished with {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
+                    prize: int = HANGMAN_PRIZES[_data["games"]["hangman"]["remaining_attempts"]]
+                _data["balance"] += prize
+                _data["stats"]["voidglow"]["earned"] += prize
+                _data["stats"]["hangman"]["total_winnings"] += prize
+                _data["stats"]["hangman"]["games_won"] += 1
+                _data["stats"]["hangman"]["current_streak"] += 1
+                _data["stats"]["hangman"]["longest_streak"] = max(_data["stats"]["hangman"]["current_streak"], _data["stats"]["hangman"]["longest_streak"])
+                if _data["games"]["hangman"]["remaining_attempts"] == 7:
+                    _data["stats"]["hangman"]["flawless_wins"] += 1
+                await message.channel.send(f"You have been awarded {prize} voidglow!")
+                _data.pop("games")
+            else:
+                print("Incorrect word guessed!")
+                _data["games"]["hangman"]["first_guess"] = False
+                _data["games"]["hangman"]["remaining_attempts"] -= 1
+                await message.channel.send(f"incorrect word!\nYou have {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!\ncurrent progress: {_data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(_data["games"]["hangman"]["absent_letters"])}")
+                if _data["games"]["hangman"]["remaining_attempts"] <= 0:
+                    print("Out of lives!")
+                    await message.channel.send(f"you ran out of lives!\nThe word was: {_data["games"]["hangman"]["answer"]}!")
+                    _data["stats"]["hangman"]["current_streak"] = 0
+                    _data["stats"]["hangman"]["games_lost"] += 1
+                    _data.pop("games")
+        else:
+            print("Processing letter guess...")
+            if message.content.lower() in _data["games"]["hangman"]["absent_letters"] or message.content.lower() in _data["games"]["hangman"]["progress"]:
+                print("Letter already guessed!")
+                await message.channel.send("you already guessed that letter!")
+            else:
+                print("New letter guessed!")
+                i = 0
+                print("Searching for letter in answer...")
+                while i <= len(_data["games"]["hangman"]["answer"]) - 1:
+                    print(f"Checking character at index {i}")
+                    if _data["games"]["hangman"]["answer"][i] == message.content.lower():
+                        print(f"Found letter at index {i}")
+                        new_progress: str = _data["games"]["hangman"]["progress"][:i] + message.content.lower() + _data["games"]["hangman"]["progress"][i+1:]
+                        _data["games"]["hangman"]["progress"] = new_progress
+                    i += 1
+
+                if message.content.lower() in _data["games"]["hangman"]["answer"]:
+                    print("Correct letter guessed!")
+                    await message.channel.send(f"that letter is in the word!\ncurrent progress: {_data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(_data["games"]["hangman"]["absent_letters"])}")
+                    if _data["games"]["hangman"]["progress"] == _data["games"]["hangman"]["answer"]:
+                        print("Flawless win!")
+                        await message.channel.send(f"you got it! The word was: {_data["games"]["hangman"]["answer"]}!\nFinished with {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
+                        prize: int = HANGMAN_PRIZES[_data["games"]["hangman"]["remaining_attempts"]]
+                        _data["balance"] += prize
+                        _data["stats"]["voidglow"]["earned"] += prize
+                        _data["stats"]["hangman"]["total_winnings"] += prize
+                        _data["stats"]["hangman"]["games_won"] += 1
+                        _data["stats"]["hangman"]["current_streak"] += 1
+                        _data["stats"]["hangman"]["longest_streak"] = max(_data["stats"]["hangman"]["current_streak"], _data["stats"]["hangman"]["longest_streak"])
+                        await message.channel.send(f"You have been awarded {prize} voidglow!")
+                        _data.pop("games")
+                    else:
+                        print("Invalidating first guess status...")
+                        _data["games"]["hangman"]["first_guess"] = False
+                else:
+                    print("Incorrect letter guessed!")
+                    _data["games"]["hangman"]["absent_letters"] += message.content.lower()
+                    _data["games"]["hangman"]["first_guess"] = False
+                    _data["games"]["hangman"]["remaining_attempts"] -= 1
+                    await message.channel.send(f"that letter is NOT in the word!\nYou have {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!\ncurrent progress: {_data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(_data["games"]["hangman"]["absent_letters"])}")
+                    if _data["games"]["hangman"]["remaining_attempts"] <= 0:
+                        print("Out of lives!")
+                        await message.channel.send(f"you ran out of lives!\nThe word was: {_data["games"]["hangman"]["answer"]}!")
+                        _data["stats"]["hangman"]["current_streak"] = 0
+                        _data["stats"]["hangman"]["games_lost"] += 1
+                        _data.pop("games")
+    with open(_filepath, "w") as file:
+        if "games" in _data:
+            _data["games"]["processing"] = False
+        json.dump(_data, file, indent=4)
+
+
 
 class MyClient(discord.Client):
 
     async def process_message(self, message):
-
-        response_blocked = False
-        split_message: list[str] = message.content.split()
+        
 
         if message.author == self.user:
             return
         if message.guild is None:
             return
-        if len(split_message) == 0:
+        if message.content == "":
             return
 
-        user_id: str = str(message.author.id)
-        filepath: str = f"userdata/{user_id}.json"
-        data: dict = get_user_data(message.author)
-        data = update_user_data(data, str(message.guild.id))
-        with open(f"userdata/{user_id}.json", "w") as file:
-            json.dump(data, file, indent=4)
+        _user_id: str = str(message.author.id)
+        _filepath: str = f"userdata/{_user_id}.json"
+        _data: dict = get_user_data(message.author)
+        _data = update_user_data(_data, str(message.guild.id))
+        with open(f"userdata/{_user_id}.json", "w") as file:
+            json.dump(_data, file, indent=4)
 
 
         # Process Functions
         async def reply(text: str):
-            await message.channel.send(f"<@{user_id}>\n{text}")
+            await message.channel.send(f"<@{_user_id}>\n{text}")
 
-        # Responses
-        if response_blocked == False:
-            if MAINTAINENCE_MODE and user_id not in get_admins():
-                return
-            
-            elif "cat" in message.content.lower():
-                await message.add_reaction("🐱")
-            
-            elif ":3" in message.content.lower():
-                await message.channel.send(":3")
-            
-            # Games
-            if "games" not in data:
-                return
-            elif "higherlower" in data["games"]:
-                if "processing" in data["games"]:
-                    if data["games"]["processing"] == True:
+    # Responses           
+        if "cat" in message.content.lower():
+            await message.add_reaction("🐱")
+        
+        if ":3" in message.content.lower():
+            await message.channel.send(":3")
+        
+        # Games
+        if "games" in _data:
+            if "higherlower" in _data["games"]:
+                if "processing" in _data["games"]:
+                    if _data["games"]["processing"] == True:
                         await reply("please slow down!")
                         return
                 try:
@@ -350,125 +443,45 @@ class MyClient(discord.Client):
                     await reply("Please enter a number between 1-100!")
                     return
                 else:
-                    with open(filepath, "w") as file:
-                        data["games"]["processing"] = True
-                        json.dump(data, file, indent=4)
-                    if attempt != data["games"]["higherlower"]["answer"]:
-                        data["games"]["higherlower"]["remaining_attempts"] -= 1
+                    with open(_filepath, "w") as file:
+                        _data["games"]["processing"] = True
+                        json.dump(_data, file, indent=4)
+                    if attempt != _data["games"]["higherlower"]["answer"]:
+                        _data["games"]["higherlower"]["remaining_attempts"] -= 1
 
-                    if attempt < data["games"]["higherlower"]["answer"]:
-                        await reply(f"higher. ({data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
-                    elif attempt > data["games"]["higherlower"]["answer"]:
-                        await reply(f"lower. ({data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
+                    if attempt < _data["games"]["higherlower"]["answer"]:
+                        await reply(f"higher. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
+                    elif attempt > _data["games"]["higherlower"]["answer"]:
+                        await reply(f"lower. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
                     else:    
-                        prize: int = HIGHER_LOWER_PRIZES[data["games"]["higherlower"]["remaining_attempts"]]
+                        prize: int = HIGHER_LOWER_PRIZES[_data["games"]["higherlower"]["remaining_attempts"]]
 
-                        if data["games"]["higherlower"]["remaining_attempts"] == 5:
+                        if _data["games"]["higherlower"]["remaining_attempts"] == 5:
                             await reply("You got it first try!! :D")
-                            data["stats"]["higherlower"]["first_attempt_wins"] += 1
+                            _data["stats"]["higherlower"]["first_attempt_wins"] += 1
                         else:
-                            await reply(f"You got it! :D. (Finished with {data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
+                            await reply(f"You got it! :D. (Finished with {_data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
                         await reply(f"You have been awarded {prize} voidglow!")
-                        data["balance"] += prize
-                        data["stats"]["voidglow"]["earned"] += prize
-                        data["stats"]["higherlower"]["total_winnings"] += prize
-                        data["stats"]["higherlower"]["games_won"] += 1
-                        data["stats"]["higherlower"]["current_streak"] += 1
-                        data["stats"]["higherlower"]["longest_streak"] = max(data["stats"]["higherlower"]["longest_streak"], data["stats"]["higherlower"]["current_streak"])
-                        data.pop("games")
+                        _data["balance"] += prize
+                        _data["stats"]["voidglow"]["earned"] += prize
+                        _data["stats"]["higherlower"]["total_winnings"] += prize
+                        _data["stats"]["higherlower"]["games_won"] += 1
+                        _data["stats"]["higherlower"]["current_streak"] += 1
+                        _data["stats"]["higherlower"]["longest_streak"] = max(_data["stats"]["higherlower"]["longest_streak"], _data["stats"]["higherlower"]["current_streak"])
+                        _data.pop("games")
 
-                    if "games" in data and data["games"]["higherlower"]["remaining_attempts"] <= 0:
-                        await message.channel.send(f"<@{user_id}> You ran out of attempts! The answer was: {data["games"]["higherlower"]["answer"]}!")
-                        data.pop("games")
-                        data["stats"]["higherlower"]["games_lost"] += 1
+                    if "games" in _data and _data["games"]["higherlower"]["remaining_attempts"] <= 0:
+                        await message.channel.send(f"<@{_user_id}> You ran out of attempts! The answer was: {_data["games"]["higherlower"]["answer"]}!")
+                        _data.pop("games")
+                        _data["stats"]["higherlower"]["games_lost"] += 1
                     
-                    #await update_badges(data)
-                        
-                    with open(filepath, "w") as file:
-                        if "games" in data:
-                            data["games"]["processing"] = False
-                        json.dump(data, file, indent=4)
+                    #await update_badges(_data)
 
-
-            elif "hangman" in data["games"]:
-                if "processing" in data["games"]:
-                    if data["games"]["processing"] == True:
-                        await reply("please slow down!")
-                        return
-                with open(filepath, "w") as file:
-                    data["games"]["processing"] = True
-                    json.dump(data, file, indent=4)
-                if len(split_message) > 1:
-                    await reply("Please only enter 1 letter/word! type !cancel if you wish to end the game.")
+            elif "hangman" in _data["games"]:
+                if _data["games"].get("processing", False):
+                    await reply("please slow down!")
                 else:
-                    if len(message.content) > 1:
-                        if message.content.lower() == data["games"]["hangman"]["answer"]:
-                            if data["games"]["hangman"]["first_guess"] == True:
-                                await reply(f"you got it on your first guess! The word was: {data["games"]["hangman"]["answer"]}!")
-                                data["stats"]["hangman"]["first_attempt_wins"] += 1
-                                prize: int = HANGMAN_PRIZES["first_try"]
-                            else:
-                                await reply(f"you got it! The word was: {data["games"]["hangman"]["answer"]}!\nFinished with {data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
-                                prize: int = HANGMAN_PRIZES[data["games"]["hangman"]["remaining_attempts"]]
-                            data["balance"] += prize
-                            data["stats"]["voidglow"]["earned"] += prize
-                            data["stats"]["hangman"]["total_winnings"] += prize
-                            data["stats"]["hangman"]["games_won"] += 1
-                            data["stats"]["hangman"]["current_streak"] += 1
-                            data["stats"]["hangman"]["longest_streak"] = max(data["stats"]["hangman"]["current_streak"], data["stats"]["hangman"]["longest_streak"])
-                            if data["games"]["hangman"]["remaining_attempts"] == 7:
-                                data["stats"]["hangman"]["flawless_wins"] += 1
-                            await reply(f"You have been awarded {prize} voidglow!")
-                            data.pop("games")
-                        else:
-                            data["games"]["hangman"]["first_guess"] = False
-                            data["games"]["hangman"]["remaining_attempts"] -= 1
-                            await reply(f"incorrect word!\nYou have {data["games"]["hangman"]["remaining_attempts"]} lives remaining!\ncurrent progress: {data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(data["games"]["hangman"]["absent_letters"])}")
-                            if data["games"]["hangman"]["remaining_attempts"] <= 0:
-                                await reply(f"you ran out of lives!\nThe word was: {data["games"]["hangman"]["answer"]}!")
-                                data["stats"]["hangman"]["current_streak"] = 0
-                                data["stats"]["hangman"]["games_lost"] += 1
-                                data.pop("games")
-                    else:
-                        if message.content.lower() in data["games"]["hangman"]["absent_letters"] or message.content.lower() in data["games"]["hangman"]["progress"]:
-                            await reply("you already guessed that letter!")
-                        else:
-                            i = 0
-                            while i <= len(data["games"]["hangman"]["answer"]) - 1:
-                                if data["games"]["hangman"]["answer"][i] == message.content.lower():
-                                    new_progress: str = data["games"]["hangman"]["progress"][:i] + message.content.lower() + data["games"]["hangman"]["progress"][i+1:]
-                                    data["games"]["hangman"]["progress"] = new_progress
-                                i += 1
-
-                            if message.content.lower() in data["games"]["hangman"]["answer"]:
-                                await reply(f"that letter is in the word!\ncurrent progress: {data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(data["games"]["hangman"]["absent_letters"])}")
-                                if data["games"]["hangman"]["progress"] == data["games"]["hangman"]["answer"]:
-                                    await reply(f"you got it! The word was: {data["games"]["hangman"]["answer"]}!\nFinished with {data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
-                                    prize: int = HANGMAN_PRIZES[data["games"]["hangman"]["remaining_attempts"]]
-                                    data["balance"] += prize
-                                    data["stats"]["voidglow"]["earned"] += prize
-                                    data["stats"]["hangman"]["total_winnings"] += prize
-                                    data["stats"]["hangman"]["games_won"] += 1
-                                    data["stats"]["hangman"]["current_streak"] += 1
-                                    data["stats"]["hangman"]["longest_streak"] = max(data["stats"]["hangman"]["current_streak"], data["stats"]["hangman"]["longest_streak"])
-                                    await reply(f"You have been awarded {prize} voidglow!")
-                                    data.pop("games")
-                                else:
-                                    data["games"]["hangman"]["first_guess"] = False
-                            else:
-                                data["games"]["hangman"]["absent_letters"] += message.content.lower()
-                                data["games"]["hangman"]["first_guess"] = False
-                                data["games"]["hangman"]["remaining_attempts"] -= 1
-                                await reply(f"that letter is NOT in the word!\nYou have {data["games"]["hangman"]["remaining_attempts"]} lives remaining!\ncurrent progress: {data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(data["games"]["hangman"]["absent_letters"])}")
-                                if data["games"]["hangman"]["remaining_attempts"] <= 0:
-                                    await reply(f"you ran out of lives!\nThe word was: {data["games"]["hangman"]["answer"]}!")
-                                    data["stats"]["hangman"]["current_streak"] = 0
-                                    data["stats"]["hangman"]["games_lost"] += 1
-                                    data.pop("games")
-                with open(filepath, "w") as file:
-                    if "games" in data:
-                        data["games"]["processing"] = False
-                    json.dump(data, file, indent=4)
+                    await process_hangman(message.author, message)
 
     async def on_ready(self):
         print(f"Logged on as {self.user}!")
