@@ -299,7 +299,7 @@ async def process_hangman(user:discord.User, message:discord.Message):
     _data = get_user_data(user)
     _filepath = get_user_file_path(user)
     with open(_filepath, "w") as file:
-        _data["games"]["processing"] = True
+        _data["games"]["hangman"]["processing"] = True
         json.dump(_data, file, indent=4)
     if len(_split_message) > 1:
         await message.reply("Please only enter 1 letter/word! type !cancel if you wish to end the game.")
@@ -370,94 +370,97 @@ async def process_hangman(user:discord.User, message:discord.Message):
                         _data.pop("games")
     with open(_filepath, "w") as file:
         if "games" in _data:
-            _data["games"]["processing"] = False
+            _data["games"]["hangman"]["processing"] = False
         json.dump(_data, file, indent=4)
 
+async def process_higherlower(user:discord.User, message:discord.Message):
+    _filepath = get_user_file_path(user)
+    _data = get_user_data(user)
+    _user_id = str(user.id)
+    _attempt: int
+    with open(_filepath, "w") as file:
+        _data["games"]["higherlower"]["processing"] = True
+        json.dump(_data, file, indent=4)
+    try:
+        _attempt = int(message.content)
+    except ValueError:
+        await message.channel.send("That is not a valid number. If you wish to cancel Higher or Lower please type !cancel.")
+        return
+    if _attempt < 1 or _attempt > 100:
+        await message.channel.send("Please enter a number between 1-100!")
+        return
+    else:
+        with open(_filepath, "w") as file:
+            _data["games"]["processing"] = True
+            json.dump(_data, file, indent=4)
+        if _attempt != _data["games"]["higherlower"]["answer"]:
+            _data["games"]["higherlower"]["remaining_attempts"] -= 1
 
+        if _attempt < _data["games"]["higherlower"]["answer"]:
+            await message.channel.send(f"higher. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
+        elif _attempt > _data["games"]["higherlower"]["answer"]:
+            await message.channel.send(f"lower. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
+        else:    
+            prize: int = HIGHER_LOWER_PRIZES[_data["games"]["higherlower"]["remaining_attempts"]]
+
+            if _data["games"]["higherlower"]["remaining_attempts"] == 5:
+                await message.channel.send("You got it first try!! :D")
+                _data["stats"]["higherlower"]["first_attempt_wins"] += 1
+            else:
+                await message.channel.send(f"You got it! :D. (Finished with {_data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
+            await message.channel.send(f"You have been awarded {prize} voidglow!")
+            _data["balance"] += prize
+            _data["stats"]["voidglow"]["earned"] += prize
+            _data["stats"]["higherlower"]["total_winnings"] += prize
+            _data["stats"]["higherlower"]["games_won"] += 1
+            _data["stats"]["higherlower"]["current_streak"] += 1
+            _data["stats"]["higherlower"]["longest_streak"] = max(_data["stats"]["higherlower"]["longest_streak"], _data["stats"]["higherlower"]["current_streak"])
+            _data.pop("games")
+
+        if "games" in _data and _data["games"]["higherlower"]["remaining_attempts"] <= 0:
+            await message.channel.send(f"<@{_user_id}> You ran out of attempts! The answer was: {_data["games"]["higherlower"]["answer"]}!")
+            _data.pop("games")
+            _data["stats"]["higherlower"]["games_lost"] += 1
+            _data["stats"]["higherlower"]["current_streak"] = 0
+    with open(_filepath, "w") as file:
+        if "games" in _data:
+            _data["games"]["higherlower"]["processing"] = False
+        json.dump(_data, file, indent=4)
 
 class MyClient(discord.Client):
-
     async def process_message(self, message):
-        
-
         if message.author == self.user:
             return
         if message.guild is None:
             return
         if message.content == "":
             return
-
+        
         _user_id: str = str(message.author.id)
-        _filepath: str = f"userdata/{_user_id}.json"
+        _filepath: str = get_user_file_path(message.author)
         _data: dict = get_user_data(message.author)
         _data = update_user_data(_data, str(message.guild.id))
-        with open(f"userdata/{_user_id}.json", "w") as file:
+        with open(_filepath, "w") as file:
             json.dump(_data, file, indent=4)
 
-
-        # Process Functions
         async def reply(text: str):
             await message.channel.send(f"<@{_user_id}>\n{text}")
-
-    # Responses           
+      
         if "cat" in message.content.lower():
             await message.add_reaction("🐱")
         
         if ":3" in message.content.lower():
             await message.channel.send(":3")
         
-        # Games
         if "games" in _data:
             if "higherlower" in _data["games"]:
-                if "processing" in _data["games"]:
-                    if _data["games"]["processing"] == True:
-                        await reply("please slow down!")
-                        return
-                try:
-                    attempt = int(message.content)
-                except ValueError:
-                    await reply("That is not a valid number. If you wish to cancel Higher or Lower please type !cancel.")
-                    return
-                if attempt < 1 or attempt > 100:
-                    await reply("Please enter a number between 1-100!")
-                    return
+                if _data["games"]["higherlower"].get("processing", False):
+                    await reply("please slow down!")
                 else:
-                    with open(_filepath, "w") as file:
-                        _data["games"]["processing"] = True
-                        json.dump(_data, file, indent=4)
-                    if attempt != _data["games"]["higherlower"]["answer"]:
-                        _data["games"]["higherlower"]["remaining_attempts"] -= 1
-
-                    if attempt < _data["games"]["higherlower"]["answer"]:
-                        await reply(f"higher. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
-                    elif attempt > _data["games"]["higherlower"]["answer"]:
-                        await reply(f"lower. ({_data["games"]["higherlower"]["remaining_attempts"]} attempt remaining!)")
-                    else:    
-                        prize: int = HIGHER_LOWER_PRIZES[_data["games"]["higherlower"]["remaining_attempts"]]
-
-                        if _data["games"]["higherlower"]["remaining_attempts"] == 5:
-                            await reply("You got it first try!! :D")
-                            _data["stats"]["higherlower"]["first_attempt_wins"] += 1
-                        else:
-                            await reply(f"You got it! :D. (Finished with {_data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
-                        await reply(f"You have been awarded {prize} voidglow!")
-                        _data["balance"] += prize
-                        _data["stats"]["voidglow"]["earned"] += prize
-                        _data["stats"]["higherlower"]["total_winnings"] += prize
-                        _data["stats"]["higherlower"]["games_won"] += 1
-                        _data["stats"]["higherlower"]["current_streak"] += 1
-                        _data["stats"]["higherlower"]["longest_streak"] = max(_data["stats"]["higherlower"]["longest_streak"], _data["stats"]["higherlower"]["current_streak"])
-                        _data.pop("games")
-
-                    if "games" in _data and _data["games"]["higherlower"]["remaining_attempts"] <= 0:
-                        await message.channel.send(f"<@{_user_id}> You ran out of attempts! The answer was: {_data["games"]["higherlower"]["answer"]}!")
-                        _data.pop("games")
-                        _data["stats"]["higherlower"]["games_lost"] += 1
-                    
-                    #await update_badges(_data)
+                    await process_higherlower(message.author, message)
 
             elif "hangman" in _data["games"]:
-                if _data["games"].get("processing", False):
+                if _data["games"]["hangman"].get("processing", False):
                     await reply("please slow down!")
                 else:
                     await process_hangman(message.author, message)
