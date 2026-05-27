@@ -320,7 +320,7 @@ async def process_hangman(user:discord.User, message:discord.Message):
                 _data["stats"]["hangman"]["longest_streak"] = max(_data["stats"]["hangman"]["current_streak"], _data["stats"]["hangman"]["longest_streak"])
                 if _data["games"]["hangman"]["remaining_attempts"] == 7:
                     _data["stats"]["hangman"]["flawless_wins"] += 1
-                await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!")
+                await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!\n(Your Balance: {_data['balance']})")
                 _data.pop("games")
             else:
                 _data["games"]["hangman"]["first_guess"] = False
@@ -353,7 +353,7 @@ async def process_hangman(user:discord.User, message:discord.Message):
                         _data["stats"]["hangman"]["games_won"] += 1
                         _data["stats"]["hangman"]["current_streak"] += 1
                         _data["stats"]["hangman"]["longest_streak"] = max(_data["stats"]["hangman"]["current_streak"], _data["stats"]["hangman"]["longest_streak"])
-                        await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!")
+                        await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!\n(Your Balance: {_data['balance']})")
                         _data.pop("games")
                     else:
                         _data["games"]["hangman"]["first_guess"] = False
@@ -406,7 +406,7 @@ async def process_higherlower(user:discord.User, message:discord.Message):
                     _data["stats"]["higherlower"]["first_attempt_wins"] += 1
                 else:
                     await message.channel.send(f"<@{user.id}> You got it! :D. (Finished with {_data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
-                await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!")
+                await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!\n(Your Balance: {_data['balance']})")
                 _data["balance"] += prize
                 _data["stats"]["voidglow"]["earned"] += prize
                 _data["stats"]["higherlower"]["total_winnings"] += prize
@@ -692,7 +692,7 @@ async def buy(interaction:discord.Interaction, item:str):
         await interaction.response.send_message("There was an error purchasing this badge. Please ensure you entered the name correctly!", ephemeral=True)
         return
     _data["balance"] -= SHOP[requested_item_name]
-    await interaction.response.send_message(f"purchased the {BADGES[requested_item_name]["title"]} badge for {cost} voidglow!")
+    await interaction.response.send_message(f"purchased the {BADGES[requested_item_name]["title"]} badge for {cost} voidglow!\n(Your new balance is {_data["balance"]} voidglow!)")
     _data["stats"]["voidglow"]["spent"] += cost
     _filepath = get_user_file_path(interaction.user)
     with open(_filepath, "w") as file:
@@ -1038,7 +1038,7 @@ async def slots(interaction:discord.Interaction, tier:Literal["low", "medium", "
         return
     else:
         _data["balance"] -= (_low_cost if tier == "low" else _medium_cost if tier == "medium" else _high_cost) 
-        _result_message += f"Better luck next time!\n-{(_low_cost if tier == "low" else _medium_cost if tier == "medium" else _high_cost)} voidglow..."
+        _result_message += f"Better luck next time!\n-{(_low_cost if tier == "low" else _medium_cost if tier == "medium" else _high_cost)} voidglow...\n(Your Balance: {_data['balance']})"
         await interaction.response.send_message(_result_message)
     _filepath = get_user_file_path(interaction.user)
     with open(_filepath, "w") as file:
