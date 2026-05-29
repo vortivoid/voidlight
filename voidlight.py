@@ -1023,18 +1023,20 @@ async def slots(interaction:discord.Interaction, tier:Literal["low", "medium", "
     _a, _b, _c = random.choice(_icons), random.choice(_icons), random.choice(_icons)
     _result_message = f"| {_a['icon']} | {_b['icon']} | {_c['icon']} |\n"
     if _a == _b == _c:
+        _winnings: int = 0
         if _a["icon"] == "💩":
-            _result_message += f"Uh oh, you got the SHAT ON! 💩!\nNo voidglow earned!"
+            _result_message += f"Uh oh, you got the SHAT ON! 💩!\nNo voidglow earned or lost!"
             await interaction.response.send_message(_result_message)
-        elif tier == "low":
-            _winnings = _a['value'] * _low_multiplier
-        elif tier == "medium":
-            _winnings = _a['value'] * _medium_multiplier
-        elif tier == "high":
-            _winnings = _a['value'] * _high_multiplier
-        modify_balance(_data, _winnings, BALANCE_MODIFIER.earned)
-        _result_message += f"You won {_winnings} voidglow!"
-        await interaction.response.send_message(_result_message)
+        else:
+            if tier == "low":
+                _winnings = _a['value'] * _low_multiplier
+            elif tier == "medium":
+                _winnings = _a['value'] * _medium_multiplier
+            elif tier == "high":
+                _winnings = _a['value'] * _high_multiplier
+            modify_balance(_data, _winnings, BALANCE_MODIFIER.earned)
+            _result_message += f"You won {_winnings} voidglow!"
+            await interaction.response.send_message(_result_message)
     else:
         _data["balance"] -= (_low_cost if tier == "low" else _medium_cost if tier == "medium" else _high_cost) 
         _result_message += f"Better luck next time!\n-{(_low_cost if tier == "low" else _medium_cost if tier == "medium" else _high_cost)} voidglow...\n(Your Balance: {_data['balance']})"
