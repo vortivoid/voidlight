@@ -310,7 +310,7 @@ async def process_hangman(user:discord.User, message:discord.Message):
                     _data["stats"]["hangman"]["first_attempt_wins"] += 1
                     prize: int = HANGMAN_PRIZES["first_try"]
                 else:
-                    await message.channel.send(f"<@{user.id}> you got it! The word was: {_data["games"]["hangman"]["answer"]}!\nFinished with {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
+                    await message.channel.send(f"<@{user.id}> you got it! The word was: **{_data["games"]["hangman"]["answer"]}**!\nFinished with {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
                     prize: int = HANGMAN_PRIZES[_data["games"]["hangman"]["remaining_attempts"]]
                 _data["balance"] += prize
                 _data["stats"]["voidglow"]["earned"] += prize
@@ -1025,8 +1025,8 @@ async def slots(interaction:discord.Interaction, tier:Literal["low", "medium", "
     if _a == _b == _c:
         if _a["icon"] == "💩":
             _result_message += f"Uh oh, you got the SHAT ON! 💩!\nNo voidglow earned!"
-            return
-        if tier == "low":
+            await interaction.response.send_message(_result_message)
+        elif tier == "low":
             _winnings = _a['value'] * _low_multiplier
         elif tier == "medium":
             _winnings = _a['value'] * _medium_multiplier
@@ -1035,7 +1035,6 @@ async def slots(interaction:discord.Interaction, tier:Literal["low", "medium", "
         modify_balance(_data, _winnings, BALANCE_MODIFIER.earned)
         _result_message += f"You won {_winnings} voidglow!"
         await interaction.response.send_message(_result_message)
-        return
     else:
         _data["balance"] -= (_low_cost if tier == "low" else _medium_cost if tier == "medium" else _high_cost) 
         _result_message += f"Better luck next time!\n-{(_low_cost if tier == "low" else _medium_cost if tier == "medium" else _high_cost)} voidglow...\n(Your Balance: {_data['balance']})"
