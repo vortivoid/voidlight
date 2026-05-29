@@ -1,4 +1,6 @@
 __pycache__/
+.idea/
 userdata/
 token.json
 todo.txt
+.idea/.gitignore
