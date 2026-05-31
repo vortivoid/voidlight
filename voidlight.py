@@ -1000,9 +1000,9 @@ async def botsay(interaction:discord.Interaction, message:str):
         description="Play a game of slots to win voidglow!"
 )
 async def slots(interaction:discord.Interaction, tier:Literal["low", "medium", "high"]):
-    _low_cost:int = 10
-    _medium_cost:int = 50
-    _high_cost:int = 100
+    _low_cost:int = 50
+    _medium_cost:int = 150
+    _high_cost:int = 300
     _low_multiplier:int = 1
     _medium_multiplier:int = 5
     _high_multiplier:int = 10
