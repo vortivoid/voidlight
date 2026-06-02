@@ -306,12 +306,12 @@ async def process_hangman(user:discord.User, message:discord.Message):
         if len(message.content) > 1:
             if message.content.lower() == _data["games"]["hangman"]["answer"]:
                 if _data["games"]["hangman"]["first_guess"] == True:
-                    await message.channel.send(f"<@{user.id}> you got it on your first guess! The word was: {_data["games"]["hangman"]["answer"]}!")
                     _data["stats"]["hangman"]["first_attempt_wins"] += 1
                     prize: int = HANGMAN_PRIZES["first_try"]
+                    await message.channel.send(f"<@{user.id}> you got it on your first guess! The word was: {_data["games"]["hangman"]["answer"]}!")
                 else:
-                    await message.channel.send(f"<@{user.id}> you got it! The word was: **{_data["games"]["hangman"]["answer"]}**!\nFinished with {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
                     prize: int = HANGMAN_PRIZES[_data["games"]["hangman"]["remaining_attempts"]]
+                    await message.channel.send(f"<@{user.id}> you got it! The word was: **{_data["games"]["hangman"]["answer"]}**!\nFinished with {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!")
                 _data["balance"] += prize
                 _data["stats"]["voidglow"]["earned"] += prize
                 _data["stats"]["hangman"]["total_winnings"] += prize
@@ -327,9 +327,9 @@ async def process_hangman(user:discord.User, message:discord.Message):
                 _data["games"]["hangman"]["remaining_attempts"] -= 1
                 await message.channel.send(f"<@{user.id}> incorrect word!\nYou have {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!\ncurrent progress: {_data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(_data["games"]["hangman"]["absent_letters"])}")
                 if _data["games"]["hangman"]["remaining_attempts"] <= 0:
-                    await message.channel.send(f"<@{user.id}> you ran out of lives!\nThe word was: {_data["games"]["hangman"]["answer"]}!")
                     _data["stats"]["hangman"]["current_streak"] = 0
                     _data["stats"]["hangman"]["games_lost"] += 1
+                    await message.channel.send(f"<@{user.id}> you ran out of lives!\nThe word was: {_data["games"]["hangman"]["answer"]}!")
                     _data.pop("games")
         else:
             if message.content.lower() in _data["games"]["hangman"]["absent_letters"] or message.content.lower() in _data["games"]["hangman"]["progress"]:
@@ -363,9 +363,9 @@ async def process_hangman(user:discord.User, message:discord.Message):
                     _data["games"]["hangman"]["remaining_attempts"] -= 1
                     await message.channel.send(f"<@{user.id}> that letter is NOT in the word!\nYou have {_data["games"]["hangman"]["remaining_attempts"]} lives remaining!\ncurrent progress: {_data["games"]["hangman"]["progress"]}\nAbsent Letters: {str(_data["games"]["hangman"]["absent_letters"])}")
                     if _data["games"]["hangman"]["remaining_attempts"] <= 0:
-                        await message.channel.send(f"<@{user.id}> you ran out of lives!\nThe word was: {_data["games"]["hangman"]["answer"]}!")
                         _data["stats"]["hangman"]["current_streak"] = 0
                         _data["stats"]["hangman"]["games_lost"] += 1
+                        await message.channel.send(f"<@{user.id}> you ran out of lives!\nThe word was: {_data["games"]["hangman"]["answer"]}!")
                         _data.pop("games")
     with open(_filepath, "w") as file:
         if "games" in _data:
@@ -402,17 +402,17 @@ async def process_higherlower(user:discord.User, message:discord.Message):
                 prize: int = HIGHER_LOWER_PRIZES[_data["games"]["higherlower"]["remaining_attempts"]]
 
                 if _data["games"]["higherlower"]["remaining_attempts"] == 5:
-                    await message.channel.send(f"<@{user.id}> You got it first try!! :D")
                     _data["stats"]["higherlower"]["first_attempt_wins"] += 1
+                    await message.channel.send(f"<@{user.id}> You got it first try!! :D")
                 else:
                     await message.channel.send(f"<@{user.id}> You got it! :D. (Finished with {_data["games"]["higherlower"]["remaining_attempts"]} attempts remaining!)")
-                await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!\n(Your Balance: {_data['balance']})")
                 _data["balance"] += prize
                 _data["stats"]["voidglow"]["earned"] += prize
                 _data["stats"]["higherlower"]["total_winnings"] += prize
                 _data["stats"]["higherlower"]["games_won"] += 1
                 _data["stats"]["higherlower"]["current_streak"] += 1
                 _data["stats"]["higherlower"]["longest_streak"] = max(_data["stats"]["higherlower"]["longest_streak"], _data["stats"]["higherlower"]["current_streak"])
+                await message.channel.send(f"<@{user.id}> You have been awarded {prize} voidglow!\n(Your Balance: {_data['balance']})")
                 _data.pop("games")
 
             if "games" in _data and _data["games"]["higherlower"]["remaining_attempts"] <= 0:
